@@ -17,13 +17,13 @@ impl<'i, T: SensorType> InverseSensorModel<'i, T> {
         self.sensor
     }
 
-    pub fn estimated_sensor_angle(&self, voltage: Voltage<T>) -> SensorAngle<T> {
+    pub fn estimated_sensor_angle(&self, voltage: &Voltage<T>) -> SensorAngle<T> {
         SensorAngle::new(
             self.offset_voltage(voltage).voltage() / self.sensor().parameters().voltage_scale(),
         )
     }
 
-    pub fn offset_voltage(&self, voltage: Voltage<T>) -> Voltage<T> {
+    pub fn offset_voltage(&self, voltage: &Voltage<T>) -> Voltage<T> {
         Voltage::<T>::new(voltage.voltage() - self.sensor().parameters().voltage_offset().voltage())
     }
 }

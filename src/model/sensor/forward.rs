@@ -17,7 +17,7 @@ impl<'f, T: SensorType> ForwardSensorModel<'f, T> {
         self.sensor
     }
 
-    pub fn voltage(&self, sensor_angle: SensorAngle<T>) -> Voltage<T> {
+    pub fn voltage(&self, sensor_angle: &SensorAngle<T>) -> Voltage<T> {
         let sensor_parameters = self.sensor().parameters();
 
         Voltage::<T>::new(
