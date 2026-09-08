@@ -26,7 +26,7 @@ impl<'f, 'm, 's, T: SensorType> ForwardMountedSensorModel<'f, 'm, 's, T> {
 
         SensorAngle::new(atan(
             -displacement * sin(shaft_angle.angle() - mounted_sensor.parameters().shaft_angle_offset().angle())
-                / (motor.distance_ratio()
+                / (motor.parameters().distance_ratio()
                     - displacement
                         * cos(shaft_angle.angle() - mounted_sensor.parameters().shaft_angle_offset().angle())),
         ))

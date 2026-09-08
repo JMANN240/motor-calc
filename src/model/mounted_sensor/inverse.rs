@@ -39,7 +39,7 @@ impl<'i, 'm, 's, T: SensorType> InverseMountedSensorModel<'i, 'm, 's, T> {
         let motor = mounted_sensor.motor();
 
         let tan_estimated_sensor_angle = tan(estimated_sensor_angle.angle());
-        let distance_ratio = motor.distance_ratio();
+        let distance_ratio = motor.parameters().distance_ratio();
 
         tan_estimated_sensor_angle * distance_ratio
     }

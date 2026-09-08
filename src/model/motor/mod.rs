@@ -1,22 +1,24 @@
+use crate::model::motor::parameters::MotorParameters;
+
 pub mod parameters;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MotorModel {
-    distance_ratio: f64,
+    parameters: MotorParameters,
 }
 
 impl MotorModel {
-    pub fn new(distance_ratio: f64) -> Self {
-        Self { distance_ratio }
+    pub fn new(parameters: MotorParameters) -> Self {
+        Self { parameters }
     }
 
-    pub fn distance_ratio(&self) -> f64 {
-        self.distance_ratio
+    pub fn parameters(&self) -> MotorParameters {
+        self.parameters
     }
 }
 
 impl Default for MotorModel {
     fn default() -> Self {
-        Self::new(6.75)
+        Self::new(MotorParameters::new(6.75))
     }
 }
