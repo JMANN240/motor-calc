@@ -1,4 +1,4 @@
-use core::f64::consts::TAU;
+use core::{f64::consts::TAU, ops::Mul};
 
 use crate::{
     model::mounted_sensor::parameters::MountedSensorParameters, types::shaft_angle::ShaftAngle,
@@ -36,5 +36,40 @@ impl Default for AssemblyParameters {
             MountedSensorParameters::new(ShaftAngle::new(0.0)),
             MountedSensorParameters::new(ShaftAngle::new(2.0 * TAU / 7.0)),
         )
+    }
+}
+
+impl Mul<f64> for &AssemblyParameters {
+    type Output = AssemblyParameters;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        AssemblyParameters::new(
+            self.mounted_alpha_sensor_parameters() * rhs,
+            self.mounted_beta_sensor_parameters() * rhs,
+        )
+    }
+}
+
+impl Mul<f64> for AssemblyParameters {
+    type Output = Self;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        &self * rhs
+    }
+}
+
+impl Mul<&AssemblyParameters> for f64 {
+    type Output = AssemblyParameters;
+
+    fn mul(self, rhs: &AssemblyParameters) -> Self::Output {
+        rhs * self
+    }
+}
+
+impl Mul<AssemblyParameters> for f64 {
+    type Output = AssemblyParameters;
+
+    fn mul(self, rhs: AssemblyParameters) -> Self::Output {
+        rhs * self
     }
 }

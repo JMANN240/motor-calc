@@ -1,4 +1,4 @@
-use core::f64::consts::TAU;
+use core::{f64::consts::TAU, ops::Mul};
 
 use crate::types::{sensor_type::SensorType, voltage::Voltage};
 
@@ -28,5 +28,37 @@ impl<T: SensorType> SensorParameters<T> {
 impl<T: SensorType> Default for SensorParameters<T> {
     fn default() -> Self {
         Self::new(48.0 / TAU, Voltage::new(2.5))
+    }
+}
+
+impl<T: SensorType> Mul<f64> for &SensorParameters<T> {
+    type Output = SensorParameters<T>;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        SensorParameters::new(self.voltage_scale() * rhs, self.voltage_offset() * rhs)
+    }
+}
+
+impl<T: SensorType> Mul<f64> for SensorParameters<T> {
+    type Output = Self;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        &self * rhs
+    }
+}
+
+impl<T: SensorType> Mul<&SensorParameters<T>> for f64 {
+    type Output = SensorParameters<T>;
+
+    fn mul(self, rhs: &SensorParameters<T>) -> Self::Output {
+        rhs * self
+    }
+}
+
+impl<T: SensorType> Mul<SensorParameters<T>> for f64 {
+    type Output = SensorParameters<T>;
+
+    fn mul(self, rhs: SensorParameters<T>) -> Self::Output {
+        rhs * self
     }
 }
