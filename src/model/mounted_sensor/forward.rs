@@ -25,10 +25,10 @@ impl<'f, 'm, 's, T: SensorType> ForwardMountedSensorModel<'f, 'm, 's, T> {
         let motor = mounted_sensor.motor();
 
         SensorAngle::new(atan(
-            -displacement * sin(shaft_angle.angle() - mounted_sensor.shaft_angle_offset().angle())
+            -displacement * sin(shaft_angle.angle() - mounted_sensor.parameters().shaft_angle_offset().angle())
                 / (motor.distance_ratio()
                     - displacement
-                        * cos(shaft_angle.angle() - mounted_sensor.shaft_angle_offset().angle())),
+                        * cos(shaft_angle.angle() - mounted_sensor.parameters().shaft_angle_offset().angle())),
         ))
     }
 }

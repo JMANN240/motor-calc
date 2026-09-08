@@ -85,12 +85,14 @@ impl<'i> InverseAssemblyModel<'i> {
         let sin_beta_sensor_shaft_angle_offset = sin(self
             .assembly()
             .parameters()
-            .beta_sensor_shaft_angle_offset()
+            .mounted_beta_sensor_parameters()
+            .shaft_angle_offset()
             .angle());
         let cos_beta_sensor_shaft_angle_offset = cos(self
             .assembly()
             .parameters()
-            .beta_sensor_shaft_angle_offset()
+            .mounted_beta_sensor_parameters()
+            .shaft_angle_offset()
             .angle());
 
         tan_alpha_sensor_angle * tan_beta_sensor_angle
@@ -108,12 +110,14 @@ impl<'i> InverseAssemblyModel<'i> {
         let sin_beta_sensor_shaft_angle_offset = sin(self
             .assembly()
             .parameters()
-            .beta_sensor_shaft_angle_offset()
+            .mounted_beta_sensor_parameters()
+            .shaft_angle_offset()
             .angle());
         let cos_beta_sensor_shaft_angle_offset = cos(self
             .assembly()
             .parameters()
-            .beta_sensor_shaft_angle_offset()
+            .mounted_beta_sensor_parameters()
+            .shaft_angle_offset()
             .angle());
 
         tan_alpha_sensor_angle * tan_beta_sensor_angle * sin_beta_sensor_shaft_angle_offset

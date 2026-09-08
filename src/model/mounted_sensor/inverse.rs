@@ -57,7 +57,7 @@ impl<'i, 'm, 's, T: SensorType> InverseMountedSensorModel<'i, 'm, 's, T> {
         estimated_shaft_angle: ShaftAngle,
     ) -> f64 {
         let relative_estimated_shaft_angle =
-            estimated_shaft_angle.angle() - self.mounted_sensor().shaft_angle_offset().angle();
+            estimated_shaft_angle.angle() - self.mounted_sensor().parameters().shaft_angle_offset().angle();
 
         let tan_estimated_sensor_angle = tan(estimated_sensor_angle.angle());
         let sin_relative_estimated_shaft_angle = sin(relative_estimated_shaft_angle);

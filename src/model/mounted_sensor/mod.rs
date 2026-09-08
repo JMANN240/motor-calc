@@ -1,32 +1,36 @@
 use crate::{
     model::{
         motor::MotorModel,
-        mounted_sensor::{forward::ForwardMountedSensorModel, inverse::InverseMountedSensorModel},
+        mounted_sensor::{
+            forward::ForwardMountedSensorModel, inverse::InverseMountedSensorModel,
+            parameters::MountedSensorParameters,
+        },
         sensor::SensorModel,
     },
-    types::{sensor_type::SensorType, shaft_angle::ShaftAngle},
+    types::sensor_type::SensorType,
 };
 
 pub mod forward;
 pub mod inverse;
+pub mod parameters;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MountedSensorModel<'m, 's, T: SensorType> {
     motor: &'m MotorModel,
     sensor: &'s SensorModel<T>,
-    shaft_angle_offset: ShaftAngle,
+    parameters: MountedSensorParameters,
 }
 
 impl<'m, 's, T: SensorType> MountedSensorModel<'m, 's, T> {
     pub fn new(
         motor: &'m MotorModel,
         sensor: &'s SensorModel<T>,
-        shaft_angle_offset: ShaftAngle,
+        parameters: MountedSensorParameters,
     ) -> Self {
         Self {
             motor,
             sensor,
-            shaft_angle_offset,
+            parameters,
         }
     }
 
@@ -38,8 +42,8 @@ impl<'m, 's, T: SensorType> MountedSensorModel<'m, 's, T> {
         self.sensor
     }
 
-    pub fn shaft_angle_offset(&self) -> ShaftAngle {
-        self.shaft_angle_offset
+    pub fn parameters(&self) -> &MountedSensorParameters {
+        &self.parameters
     }
 
     pub fn forward(&self) -> ForwardMountedSensorModel<'_, '_, '_, T> {

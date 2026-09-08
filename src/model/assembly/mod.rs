@@ -64,7 +64,7 @@ impl AssemblyModel {
         MountedSensorModel::new(
             self.motor_ref(),
             self.alpha_sensor_ref(),
-            self.parameters().alpha_sensor_shaft_angle_offset(),
+            self.parameters().mounted_alpha_sensor_parameters(),
         )
     }
 
@@ -72,7 +72,7 @@ impl AssemblyModel {
         MountedSensorModel::new(
             self.motor_ref(),
             self.beta_sensor_ref(),
-            self.parameters().beta_sensor_shaft_angle_offset(),
+            self.parameters().mounted_beta_sensor_parameters(),
         )
     }
 }

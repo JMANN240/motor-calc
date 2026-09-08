@@ -1,3 +1,5 @@
+pub mod parameters;
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MotorModel {
     distance_ratio: f64,
