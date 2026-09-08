@@ -1,7 +1,9 @@
 [package]
 name = "motor-calc"
+description = "no_std calculations to find the displacement and shaft angle of a 7-axis radial hydraulic motor"
 version = "0.1.0"
 edition = "2024"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 libm = "0.2.16"
