@@ -1,4 +1,4 @@
-use core::ops::Mul;
+use core::ops::{Add, Div, Mul, Neg, Sub};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MotorParameters {
@@ -12,6 +12,22 @@ impl MotorParameters {
 
     pub fn distance_ratio(&self) -> f64 {
         self.distance_ratio
+    }
+}
+
+impl Add for MotorParameters {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self::new(self.distance_ratio() + rhs.distance_ratio())
+    }
+}
+
+impl Sub for MotorParameters {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self::new(self.distance_ratio() - rhs.distance_ratio())
     }
 }
 
@@ -44,5 +60,29 @@ impl Mul<MotorParameters> for f64 {
 
     fn mul(self, rhs: MotorParameters) -> Self::Output {
         rhs * self
+    }
+}
+
+impl Div<f64> for &MotorParameters {
+    type Output = MotorParameters;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        MotorParameters::new(self.distance_ratio() / rhs)
+    }
+}
+
+impl Div<f64> for MotorParameters {
+    type Output = Self;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        &self / rhs
+    }
+}
+
+impl Neg for MotorParameters {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self::new(-self.distance_ratio())
     }
 }

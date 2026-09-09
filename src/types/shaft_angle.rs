@@ -1,4 +1,4 @@
-use core::ops::{Deref, Mul};
+use core::ops::{Add, Deref, Div, Mul, Neg, Sub};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ShaftAngle {
@@ -20,6 +20,22 @@ impl Deref for ShaftAngle {
 
     fn deref(&self) -> &Self::Target {
         &self.angle
+    }
+}
+
+impl Add for ShaftAngle {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self::new(self.angle() + rhs.angle())
+    }
+}
+
+impl Sub for ShaftAngle {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self::new(self.angle() - rhs.angle())
     }
 }
 
@@ -52,5 +68,37 @@ impl Mul<ShaftAngle> for f64 {
 
     fn mul(self, rhs: ShaftAngle) -> Self::Output {
         rhs * self
+    }
+}
+
+impl Div<f64> for &ShaftAngle {
+    type Output = ShaftAngle;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        ShaftAngle::new(self.angle() / rhs)
+    }
+}
+
+impl Div<f64> for ShaftAngle {
+    type Output = Self;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        &self / rhs
+    }
+}
+
+impl Neg for &ShaftAngle {
+    type Output = ShaftAngle;
+
+    fn neg(self) -> Self::Output {
+        ShaftAngle::new(-self.angle())
+    }
+}
+
+impl Neg for ShaftAngle {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        -&self
     }
 }

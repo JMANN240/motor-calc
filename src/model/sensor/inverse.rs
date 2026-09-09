@@ -18,12 +18,16 @@ impl<'i, T: SensorType> InverseSensorModel<'i, T> {
     }
 
     pub fn estimated_sensor_angle(&self, voltage: &Voltage<T>) -> SensorAngle<T> {
-        SensorAngle::new(
-            self.offset_voltage(voltage).voltage() / self.sensor().parameters().voltage_scale(),
-        )
+        SensorAngle::new(motor_calc_core::inverse::estimated_sensor_angle(
+            self.estimated_offset_voltage(voltage).voltage(),
+            self.sensor().parameters().voltage_scale(),
+        ))
     }
 
-    pub fn offset_voltage(&self, voltage: &Voltage<T>) -> Voltage<T> {
-        Voltage::<T>::new(voltage.voltage() - self.sensor().parameters().voltage_offset().voltage())
+    pub fn estimated_offset_voltage(&self, voltage: &Voltage<T>) -> Voltage<T> {
+        Voltage::<T>::from_volts_f64(motor_calc_core::inverse::estimated_offset_voltage(
+            voltage.voltage(),
+            self.sensor().parameters().voltage_offset().voltage(),
+        ))
     }
 }

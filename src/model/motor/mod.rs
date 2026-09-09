@@ -1,5 +1,6 @@
-use crate::model::motor::parameters::MotorParameters;
+use crate::model::motor::{gradient::GradientMotorModel, parameters::MotorParameters};
 
+pub mod gradient;
 pub mod parameters;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -14,6 +15,10 @@ impl MotorModel {
 
     pub fn parameters(&self) -> MotorParameters {
         self.parameters
+    }
+
+    pub fn gradient(&self) -> GradientMotorModel<'_> {
+        GradientMotorModel::new(self)
     }
 }
 

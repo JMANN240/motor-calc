@@ -1,4 +1,4 @@
-use libm::{atan2, cos, sin, tan};
+use libm::{atan2, pow};
 
 use crate::{
     model::assembly::AssemblyModel,
@@ -23,10 +23,22 @@ impl<'i> InverseAssemblyModel<'i> {
         self.assembly
     }
 
+    pub fn squared_error_estimated_displacement(&self, error_estimated_displacement: f64) -> f64 {
+        pow(error_estimated_displacement, 2.0)
+    }
+
+    pub fn error_estimated_displacement(
+        &self,
+        estimated_displacement: f64,
+        displacement: f64,
+    ) -> f64 {
+        estimated_displacement - displacement
+    }
+
     pub fn estimated_displacement(
         &self,
-        estimated_alpha_sensor_angle: SensorAngle<Alpha>,
-        estimated_beta_sensor_angle: SensorAngle<Beta>,
+        estimated_alpha_sensor_angle: &SensorAngle<Alpha>,
+        estimated_beta_sensor_angle: &SensorAngle<Beta>,
     ) -> f64 {
         let estimated_shaft_angle =
             self.estimated_shaft_angle(estimated_alpha_sensor_angle, estimated_beta_sensor_angle);
@@ -60,8 +72,8 @@ impl<'i> InverseAssemblyModel<'i> {
 
     pub fn estimated_shaft_angle(
         &self,
-        estimated_alpha_sensor_angle: SensorAngle<Alpha>,
-        estimated_beta_sensor_angle: SensorAngle<Beta>,
+        estimated_alpha_sensor_angle: &SensorAngle<Alpha>,
+        estimated_beta_sensor_angle: &SensorAngle<Beta>,
     ) -> ShaftAngle {
         ShaftAngle::new(atan2(
             self.estimated_shaft_angle_numerator(
@@ -77,51 +89,33 @@ impl<'i> InverseAssemblyModel<'i> {
 
     pub fn estimated_shaft_angle_numerator(
         &self,
-        estimated_alpha_sensor_angle: SensorAngle<Alpha>,
-        estimated_beta_sensor_angle: SensorAngle<Beta>,
+        estimated_alpha_sensor_angle: &SensorAngle<Alpha>,
+        estimated_beta_sensor_angle: &SensorAngle<Beta>,
     ) -> f64 {
-        let tan_alpha_sensor_angle = tan(estimated_alpha_sensor_angle.angle());
-        let tan_beta_sensor_angle = tan(estimated_beta_sensor_angle.angle());
-        let sin_beta_sensor_shaft_angle_offset = sin(self
-            .assembly()
-            .parameters()
-            .mounted_beta_sensor_parameters()
-            .shaft_angle_offset()
-            .angle());
-        let cos_beta_sensor_shaft_angle_offset = cos(self
-            .assembly()
-            .parameters()
-            .mounted_beta_sensor_parameters()
-            .shaft_angle_offset()
-            .angle());
-
-        tan_alpha_sensor_angle * tan_beta_sensor_angle
-            - tan_alpha_sensor_angle * tan_beta_sensor_angle * cos_beta_sensor_shaft_angle_offset
-            - tan_alpha_sensor_angle * sin_beta_sensor_shaft_angle_offset
+        motor_calc_core::inverse::estimated_shaft_angle_numerator(
+            estimated_alpha_sensor_angle.angle(),
+            estimated_beta_sensor_angle.angle(),
+            self.assembly()
+                .parameters()
+                .mounted_beta_sensor_parameters()
+                .shaft_angle_offset()
+                .angle(),
+        )
     }
 
     pub fn estimated_shaft_angle_denominator(
         &self,
-        estimated_alpha_sensor_angle: SensorAngle<Alpha>,
-        estimated_beta_sensor_angle: SensorAngle<Beta>,
+        estimated_alpha_sensor_angle: &SensorAngle<Alpha>,
+        estimated_beta_sensor_angle: &SensorAngle<Beta>,
     ) -> f64 {
-        let tan_alpha_sensor_angle = tan(estimated_alpha_sensor_angle.angle());
-        let tan_beta_sensor_angle = tan(estimated_beta_sensor_angle.angle());
-        let sin_beta_sensor_shaft_angle_offset = sin(self
-            .assembly()
-            .parameters()
-            .mounted_beta_sensor_parameters()
-            .shaft_angle_offset()
-            .angle());
-        let cos_beta_sensor_shaft_angle_offset = cos(self
-            .assembly()
-            .parameters()
-            .mounted_beta_sensor_parameters()
-            .shaft_angle_offset()
-            .angle());
-
-        tan_alpha_sensor_angle * tan_beta_sensor_angle * sin_beta_sensor_shaft_angle_offset
-            - tan_alpha_sensor_angle * cos_beta_sensor_shaft_angle_offset
-            + tan_beta_sensor_angle
+        motor_calc_core::inverse::estimated_shaft_angle_denominator(
+            estimated_alpha_sensor_angle.angle(),
+            estimated_beta_sensor_angle.angle(),
+            self.assembly()
+                .parameters()
+                .mounted_beta_sensor_parameters()
+                .shaft_angle_offset()
+                .angle(),
+        )
     }
 }

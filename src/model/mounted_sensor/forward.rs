@@ -1,5 +1,3 @@
-use libm::{atan, cos, sin};
-
 use crate::{
     model::mounted_sensor::MountedSensorModel,
     types::{sensor_angle::SensorAngle, sensor_type::SensorType, shaft_angle::ShaftAngle},
@@ -20,15 +18,20 @@ impl<'f, 'm, 's, T: SensorType> ForwardMountedSensorModel<'f, 'm, 's, T> {
     }
 
     pub fn sensor_angle(&self, displacement: f64, shaft_angle: ShaftAngle) -> SensorAngle<T> {
-        let mounted_sensor = self.mounted_sensor();
+        SensorAngle::new(motor_calc_core::forward::sensor_angle(
+            displacement,
+            self.relative_shaft_angle(shaft_angle).angle(),
+            self.mounted_sensor().motor().parameters().distance_ratio(),
+        ))
+    }
 
-        let motor = mounted_sensor.motor();
-
-        SensorAngle::new(atan(
-            -displacement * sin(shaft_angle.angle() - mounted_sensor.parameters().shaft_angle_offset().angle())
-                / (motor.parameters().distance_ratio()
-                    - displacement
-                        * cos(shaft_angle.angle() - mounted_sensor.parameters().shaft_angle_offset().angle())),
+    pub fn relative_shaft_angle(&self, shaft_angle: ShaftAngle) -> ShaftAngle {
+        ShaftAngle::new(motor_calc_core::forward::relative_shaft_angle(
+            shaft_angle.angle(),
+            self.mounted_sensor()
+                .parameters()
+                .shaft_angle_offset()
+                .angle(),
         ))
     }
 }

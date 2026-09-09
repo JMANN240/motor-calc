@@ -1,16 +1,13 @@
 use crate::{
     model::{
-        motor::MotorModel,
-        mounted_sensor::{
-            forward::ForwardMountedSensorModel, inverse::InverseMountedSensorModel,
-            parameters::MountedSensorParameters,
-        },
-        sensor::SensorModel,
-    },
-    types::sensor_type::SensorType,
+        motor::MotorModel, mounted_sensor::{
+            forward::ForwardMountedSensorModel, gradient::GradientMountedSensorModel, inverse::InverseMountedSensorModel, parameters::MountedSensorParameters,
+        }, sensor::SensorModel,
+    }, types::{sensor_type::SensorType, shaft_angle::ShaftAngle},
 };
 
 pub mod forward;
+pub mod gradient;
 pub mod inverse;
 pub mod parameters;
 
@@ -52,5 +49,13 @@ impl<'m, 's, T: SensorType> MountedSensorModel<'m, 's, T> {
 
     pub fn inverse(&self) -> InverseMountedSensorModel<'_, '_, '_, T> {
         InverseMountedSensorModel::new(self)
+    }
+
+    pub fn gradient(&self) -> GradientMountedSensorModel<'_, '_, '_, T> {
+        GradientMountedSensorModel::new(self)
+    }
+
+    pub fn relative_shaft_angle(&self, shaft_angle: ShaftAngle) -> ShaftAngle {
+        shaft_angle - self.parameters().shaft_angle_offset()
     }
 }

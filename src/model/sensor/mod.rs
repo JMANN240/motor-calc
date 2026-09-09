@@ -1,11 +1,11 @@
 use crate::{
     model::sensor::{
-        forward::ForwardSensorModel, inverse::InverseSensorModel, parameters::SensorParameters,
-    },
-    types::sensor_type::SensorType,
+        forward::ForwardSensorModel, gradient::GradientSensorModel, inverse::InverseSensorModel, parameters::SensorParameters,
+    }, types::sensor_type::SensorType,
 };
 
 pub mod forward;
+pub mod gradient;
 pub mod inverse;
 pub mod parameters;
 
@@ -29,5 +29,9 @@ impl<T: SensorType> SensorModel<T> {
 
     pub fn inverse(&self) -> InverseSensorModel<'_, T> {
         InverseSensorModel::new(self)
+    }
+
+    pub fn gradient(&self) -> GradientSensorModel<'_, T> {
+        GradientSensorModel::new(self)
     }
 }

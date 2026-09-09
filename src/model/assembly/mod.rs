@@ -1,11 +1,10 @@
 use crate::{
     model::{
-        assembly::parameters::AssemblyParameters, motor::MotorModel,
-        mounted_sensor::MountedSensorModel, sensor::SensorModel,
-    },
-    types::sensor_type::{Alpha, Beta},
+        assembly::{gradient::GradientAssemblyModel, inverse::InverseAssemblyModel, parameters::AssemblyParameters}, motor::MotorModel, mounted_sensor::MountedSensorModel, sensor::SensorModel,
+    }, types::sensor_type::{Alpha, Beta},
 };
 
+pub mod gradient;
 pub mod inverse;
 pub mod parameters;
 
@@ -58,6 +57,14 @@ impl AssemblyModel {
 
     pub fn parameters(&self) -> AssemblyParameters {
         self.parameters
+    }
+
+    pub fn inverse(&self) -> InverseAssemblyModel<'_> {
+        InverseAssemblyModel::new(self)
+    }
+
+    pub fn gradient(&self) -> GradientAssemblyModel<'_> {
+        GradientAssemblyModel::new(self)
     }
 
     pub fn mounted_alpha_sensor(&self) -> MountedSensorModel<'_, '_, Alpha> {

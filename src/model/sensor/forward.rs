@@ -20,9 +20,10 @@ impl<'f, T: SensorType> ForwardSensorModel<'f, T> {
     pub fn voltage(&self, sensor_angle: &SensorAngle<T>) -> Voltage<T> {
         let sensor_parameters = self.sensor().parameters();
 
-        Voltage::<T>::new(
-            sensor_parameters.voltage_scale() * sensor_angle.angle()
-                + sensor_parameters.voltage_offset().voltage(),
-        )
+        Voltage::<T>::from_volts_f64(motor_calc_core::forward::voltage(
+            sensor_parameters.voltage_scale(),
+            sensor_angle.angle(),
+            sensor_parameters.voltage_offset().voltage(),
+        ))
     }
 }

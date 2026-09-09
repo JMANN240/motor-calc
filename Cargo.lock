@@ -13,4 +13,12 @@ name = "motor-calc"
 version = "0.1.4"
 dependencies = [
  "libm",
+ "motor-calc-core",
+]
+
+[[package]]
+name = "motor-calc-core"
+version = "0.1.0"
+dependencies = [
+ "libm",
 ]

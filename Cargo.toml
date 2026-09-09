@@ -7,3 +7,4 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 libm = "0.2.16"
+motor-calc-core = { path = "../motor-calc-core" }
