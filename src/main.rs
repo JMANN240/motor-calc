@@ -17,55 +17,27 @@ use motor_calc_core::parameters::Parameters;
 
 fn main() {
     let voltages = [
+        (1800, 3719),
+        (1233, 3551),
+        (1122, 2894),
+        (1425, 2026),
+        (1956, 1503),
+        (2494, 1451),
+        (2915, 1627),
+        (3224, 1937),
+        (3379, 2313),
+        (3364, 2731),
+        (3109, 3213),
+        (2514, 3588),
+    ]
+    .into_iter()
+    .map(|(alpha_millivolts, beta_millivolts)| {
         (
-            Voltage::<Alpha>::from_millivolts_u32(1800),
-            Voltage::<Beta>::from_millivolts_u32(3719),
-        ),
-        (
-            Voltage::<Alpha>::from_millivolts_u32(1233),
-            Voltage::<Beta>::from_millivolts_u32(3551),
-        ),
-        (
-            Voltage::<Alpha>::from_millivolts_u32(1122),
-            Voltage::<Beta>::from_millivolts_u32(2894),
-        ),
-        (
-            Voltage::<Alpha>::from_millivolts_u32(1425),
-            Voltage::<Beta>::from_millivolts_u32(2026),
-        ),
-        (
-            Voltage::<Alpha>::from_millivolts_u32(1956),
-            Voltage::<Beta>::from_millivolts_u32(1503),
-        ),
-        (
-            Voltage::<Alpha>::from_millivolts_u32(2494),
-            Voltage::<Beta>::from_millivolts_u32(1451),
-        ),
-        (
-            Voltage::<Alpha>::from_millivolts_u32(2915),
-            Voltage::<Beta>::from_millivolts_u32(1627),
-        ),
-        (
-            Voltage::<Alpha>::from_millivolts_u32(3224),
-            Voltage::<Beta>::from_millivolts_u32(1937),
-        ),
-        (
-            Voltage::<Alpha>::from_millivolts_u32(3379),
-            Voltage::<Beta>::from_millivolts_u32(2313),
-        ),
-        (
-            Voltage::<Alpha>::from_millivolts_u32(3364),
-            Voltage::<Beta>::from_millivolts_u32(2731),
-        ),
-        (
-            Voltage::<Alpha>::from_millivolts_u32(3109),
-            Voltage::<Beta>::from_millivolts_u32(3213),
-        ),
-        (
-            Voltage::<Alpha>::from_millivolts_u32(2514),
-            Voltage::<Beta>::from_millivolts_u32(3588),
-        ),
-    ];
+            Voltage::<f64, Alpha>::from_millivolts_u32(alpha_millivolts).unwrap(),
+            Voltage::<f64, Beta>::from_millivolts_u32(beta_millivolts).unwrap(),
+        )
+    })
+    .collect::<Vec<_>>();
 
     let mut distance_ratio = 6.75;
     let mut beta_shaft_angle_offset = 2.0 * TAU / 7.0;
@@ -81,38 +53,38 @@ fn main() {
             MotorModel::new(MotorParameters::new(distance_ratio)),
             SensorModel::new(SensorParameters::new(
                 alpha_voltage_scale,
-                Voltage::from_volts_f64(alpha_voltage_offset),
+                Voltage::from_volts_f(alpha_voltage_offset),
             )),
             SensorModel::new(SensorParameters::new(
                 beta_voltage_scale,
-                Voltage::from_volts_f64(beta_voltage_offset),
+                Voltage::from_volts_f(beta_voltage_offset),
             )),
             AssemblyParameters::new(
-                MountedSensorParameters::new(ShaftAngle::from_radians_f64(0.0)),
-                MountedSensorParameters::new(ShaftAngle::from_radians_f64(beta_shaft_angle_offset)),
+                MountedSensorParameters::new(ShaftAngle::from_radians_f(0.0)),
+                MountedSensorParameters::new(ShaftAngle::from_radians_f(beta_shaft_angle_offset)),
             ),
         );
 
         let mut sum_gradient = Parameters::zero();
         let mut sum_of_squared_errors = 0.0;
 
-        for (alpha_voltage, beta_voltage) in voltages {
+        for &(alpha_voltage, beta_voltage) in &voltages {
             let grad_squared_error_estimated_displacement = assembly
                 .gradient()
-                .grad_squared_error_estimated_displacement(&alpha_voltage, &beta_voltage, 1.0);
+                .grad_squared_error_estimated_displacement(alpha_voltage, beta_voltage, 1.0);
 
             sum_gradient = sum_gradient + grad_squared_error_estimated_displacement;
             sum_of_squared_errors += assembly.inverse().squared_error_estimated_displacement(
                 assembly.inverse().error_estimated_displacement(
                     assembly.inverse().estimated_displacement(
-                        &assembly
+                        assembly
                             .alpha_sensor_ref()
                             .inverse()
-                            .estimated_sensor_angle(&alpha_voltage),
-                        &assembly
+                            .estimated_sensor_angle(alpha_voltage),
+                        assembly
                             .beta_sensor_ref()
                             .inverse()
-                            .estimated_sensor_angle(&beta_voltage),
+                            .estimated_sensor_angle(beta_voltage),
                     ),
                     1.0,
                 ),
@@ -121,19 +93,19 @@ fn main() {
 
         if i % 1000 == 0 {
             println!("{}", i);
-            for (alpha_voltage, beta_voltage) in voltages {
+            for &(alpha_voltage, beta_voltage) in &voltages {
                 println!(
                     "{:06.2}",
                     100.0
                         * assembly.inverse().estimated_displacement(
-                            &assembly
+                            assembly
                                 .alpha_sensor_ref()
                                 .inverse()
-                                .estimated_sensor_angle(&alpha_voltage),
-                            &assembly
+                                .estimated_sensor_angle(alpha_voltage),
+                            assembly
                                 .beta_sensor_ref()
                                 .inverse()
-                                .estimated_sensor_angle(&beta_voltage)
+                                .estimated_sensor_angle(beta_voltage)
                         ),
                 );
             }

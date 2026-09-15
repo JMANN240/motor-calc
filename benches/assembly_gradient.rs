@@ -8,16 +8,18 @@ fn bench_grad_squared_error_estimated_displacement(c: &mut Criterion) {
     let gradient = assembly.gradient();
 
     c.bench_with_input(
-        BenchmarkId::new("grad_squared_error_estimated_displacement", format!("{}_{}", params.0, params.1)),
+        BenchmarkId::new(
+            "grad_squared_error_estimated_displacement",
+            format!("{}_{}", params.0, params.1),
+        ),
         &params,
         |b, &(raw_alpha_voltage, raw_beta_voltage)| {
             b.iter(|| {
-                gradient
-                    .grad_squared_error_estimated_displacement(
-                        &Voltage::from_volts_f64(raw_alpha_voltage),
-                        &Voltage::from_volts_f64(raw_beta_voltage),
-                        1.0,
-                    )
+                gradient.grad_squared_error_estimated_displacement(
+                    Voltage::from_volts_f(raw_alpha_voltage),
+                    Voltage::from_volts_f(raw_beta_voltage),
+                    1.0,
+                )
             });
         },
     );

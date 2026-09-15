@@ -1,4 +1,5 @@
 use motor_calc_core::parameters::Parameters;
+use num_traits::Float;
 
 use crate::{
     model::assembly::AssemblyModel,
@@ -9,25 +10,25 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct GradientAssemblyModel<'g> {
-    assembly: &'g AssemblyModel,
+pub struct GradientAssemblyModel<'g, F: Float> {
+    assembly: &'g AssemblyModel<F>,
 }
 
-impl<'g> GradientAssemblyModel<'g> {
-    pub fn new(assembly: &'g AssemblyModel) -> Self {
+impl<'g, F: Float> GradientAssemblyModel<'g, F> {
+    pub fn new(assembly: &'g AssemblyModel<F>) -> Self {
         Self { assembly }
     }
 
-    pub fn assembly(&self) -> &AssemblyModel {
+    pub fn assembly(self) -> &'g AssemblyModel<F> {
         self.assembly
     }
 
     pub fn grad_squared_error_estimated_displacement(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-        beta_voltage: &Voltage<Beta>,
-        displacement: f64,
-    ) -> Parameters {
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+        beta_voltage: Voltage<F, Beta>,
+        displacement: F,
+    ) -> Parameters<F> {
         let estimated_alpha_sensor_angle = self
             .assembly()
             .alpha_sensor_ref()
@@ -43,44 +44,45 @@ impl<'g> GradientAssemblyModel<'g> {
         let estimated_displacement = self
             .assembly()
             .inverse()
-            .estimated_displacement(&estimated_alpha_sensor_angle, &estimated_beta_sensor_angle);
+            .estimated_displacement(estimated_alpha_sensor_angle, estimated_beta_sensor_angle);
 
-        2.0 * self
-            .assembly()
-            .inverse()
-            .error_estimated_displacement(estimated_displacement, displacement)
-            * self.grad_error_estimated_displacement(alpha_voltage, beta_voltage)
+        self.grad_error_estimated_displacement(alpha_voltage, beta_voltage)
+            * F::from(2).expect("2 can always be represented with a float")
+            * self
+                .assembly()
+                .inverse()
+                .error_estimated_displacement(estimated_displacement, displacement)
     }
 
     pub fn grad_error_estimated_displacement(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-        beta_voltage: &Voltage<Beta>,
-    ) -> Parameters {
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+        beta_voltage: Voltage<F, Beta>,
+    ) -> Parameters<F> {
         self.grad_estimated_displacement(alpha_voltage, beta_voltage)
     }
 
     pub fn grad_estimated_displacement(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-        beta_voltage: &Voltage<Beta>,
-    ) -> Parameters {
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+        beta_voltage: Voltage<F, Beta>,
+    ) -> Parameters<F> {
         self.grad_estimated_alpha_displacement(alpha_voltage, beta_voltage)
             + self.grad_estimated_beta_displacement(alpha_voltage, beta_voltage)
     }
 
     pub fn grad_estimated_alpha_displacement(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-        beta_voltage: &Voltage<Beta>,
-    ) -> Parameters {
-        let estimated_alpha_sensor_angle = &self
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+        beta_voltage: Voltage<F, Beta>,
+    ) -> Parameters<F> {
+        let estimated_alpha_sensor_angle = self
             .assembly()
             .alpha_sensor_ref()
             .inverse()
             .estimated_sensor_angle(alpha_voltage);
 
-        let estimated_beta_sensor_angle = &self
+        let estimated_beta_sensor_angle = self
             .assembly()
             .beta_sensor_ref()
             .inverse()
@@ -121,9 +123,9 @@ impl<'g> GradientAssemblyModel<'g> {
     }
 
     pub fn grad_estimated_alpha_displacement_numerator(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-    ) -> Parameters {
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+    ) -> Parameters<F> {
         let estimated_alpha_sensor_angle = self
             .assembly()
             .alpha_sensor_ref()
@@ -142,10 +144,10 @@ impl<'g> GradientAssemblyModel<'g> {
     }
 
     pub fn grad_estimated_alpha_displacement_denominator(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-        beta_voltage: &Voltage<Beta>,
-    ) -> Parameters {
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+        beta_voltage: Voltage<F, Beta>,
+    ) -> Parameters<F> {
         let estimated_alpha_sensor_angle = self
             .assembly()
             .alpha_sensor_ref()
@@ -161,7 +163,7 @@ impl<'g> GradientAssemblyModel<'g> {
         motor_calc_core::gradient::grad_estimated_alpha_displacement_denominator(
             self.assembly()
                 .inverse()
-                .estimated_shaft_angle(&estimated_alpha_sensor_angle, &estimated_beta_sensor_angle)
+                .estimated_shaft_angle(estimated_alpha_sensor_angle, estimated_beta_sensor_angle)
                 .radians(),
             estimated_alpha_sensor_angle.radians(),
             self.assembly()
@@ -174,17 +176,17 @@ impl<'g> GradientAssemblyModel<'g> {
     }
 
     pub fn grad_estimated_beta_displacement(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-        beta_voltage: &Voltage<Beta>,
-    ) -> Parameters {
-        let estimated_alpha_sensor_angle = &self
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+        beta_voltage: Voltage<F, Beta>,
+    ) -> Parameters<F> {
+        let estimated_alpha_sensor_angle = self
             .assembly()
             .alpha_sensor_ref()
             .inverse()
             .estimated_sensor_angle(alpha_voltage);
 
-        let estimated_beta_sensor_angle = &self
+        let estimated_beta_sensor_angle = self
             .assembly()
             .beta_sensor_ref()
             .inverse()
@@ -222,9 +224,9 @@ impl<'g> GradientAssemblyModel<'g> {
     }
 
     fn grad_estimated_beta_displacement_numerator(
-        &self,
-        beta_voltage: &Voltage<Beta>,
-    ) -> Parameters {
+        self,
+        beta_voltage: Voltage<F, Beta>,
+    ) -> Parameters<F> {
         let estimated_beta_sensor_angle = self
             .assembly()
             .beta_sensor_ref()
@@ -243,10 +245,10 @@ impl<'g> GradientAssemblyModel<'g> {
     }
 
     fn grad_estimated_beta_displacement_denominator(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-        beta_voltage: &Voltage<Beta>,
-    ) -> Parameters {
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+        beta_voltage: Voltage<F, Beta>,
+    ) -> Parameters<F> {
         let estimated_alpha_sensor_angle = self
             .assembly()
             .alpha_sensor_ref()
@@ -262,7 +264,7 @@ impl<'g> GradientAssemblyModel<'g> {
         let estimated_shaft_angle = self
             .assembly()
             .inverse()
-            .estimated_shaft_angle(&estimated_alpha_sensor_angle, &estimated_beta_sensor_angle);
+            .estimated_shaft_angle(estimated_alpha_sensor_angle, estimated_beta_sensor_angle);
 
         let grad_estimated_shaft_angle =
             self.grad_estimated_shaft_angle(alpha_voltage, beta_voltage);
@@ -296,10 +298,10 @@ impl<'g> GradientAssemblyModel<'g> {
     }
 
     pub fn grad_cos_estimated_shaft_angle(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-        beta_voltage: &Voltage<Beta>,
-    ) -> Parameters {
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+        beta_voltage: Voltage<F, Beta>,
+    ) -> Parameters<F> {
         let estimated_alpha_sensor_angle = self
             .assembly()
             .alpha_sensor_ref()
@@ -315,17 +317,17 @@ impl<'g> GradientAssemblyModel<'g> {
         motor_calc_core::gradient::grad_cos_estimated_shaft_angle(
             self.assembly()
                 .inverse()
-                .estimated_shaft_angle(&estimated_alpha_sensor_angle, &estimated_beta_sensor_angle)
+                .estimated_shaft_angle(estimated_alpha_sensor_angle, estimated_beta_sensor_angle)
                 .radians(),
             self.grad_estimated_shaft_angle(alpha_voltage, beta_voltage),
         )
     }
 
     pub fn grad_sin_estimated_shaft_angle(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-        beta_voltage: &Voltage<Beta>,
-    ) -> Parameters {
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+        beta_voltage: Voltage<F, Beta>,
+    ) -> Parameters<F> {
         let estimated_alpha_sensor_angle = self
             .assembly()
             .alpha_sensor_ref()
@@ -341,17 +343,17 @@ impl<'g> GradientAssemblyModel<'g> {
         motor_calc_core::gradient::grad_sin_estimated_shaft_angle(
             self.assembly()
                 .inverse()
-                .estimated_shaft_angle(&estimated_alpha_sensor_angle, &estimated_beta_sensor_angle)
+                .estimated_shaft_angle(estimated_alpha_sensor_angle, estimated_beta_sensor_angle)
                 .radians(),
             self.grad_estimated_shaft_angle(alpha_voltage, beta_voltage),
         )
     }
 
     pub fn grad_estimated_shaft_angle(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-        beta_voltage: &Voltage<Beta>,
-    ) -> Parameters {
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+        beta_voltage: Voltage<F, Beta>,
+    ) -> Parameters<F> {
         let estimated_alpha_sensor_angle = self
             .assembly()
             .alpha_sensor_ref()
@@ -367,17 +369,17 @@ impl<'g> GradientAssemblyModel<'g> {
         motor_calc_core::gradient::grad_estimated_shaft_angle(
             self.grad_estimated_shaft_angle_inner(alpha_voltage, beta_voltage),
             self.assembly().inverse().estimated_shaft_angle_inner(
-                &estimated_alpha_sensor_angle,
-                &estimated_beta_sensor_angle,
+                estimated_alpha_sensor_angle,
+                estimated_beta_sensor_angle,
             ),
         )
     }
 
     pub fn grad_estimated_shaft_angle_inner(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-        beta_voltage: &Voltage<Beta>,
-    ) -> Parameters {
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+        beta_voltage: Voltage<F, Beta>,
+    ) -> Parameters<F> {
         let estimated_alpha_sensor_angle = self
             .assembly()
             .alpha_sensor_ref()
@@ -393,22 +395,22 @@ impl<'g> GradientAssemblyModel<'g> {
         motor_calc_core::gradient::grad_estimated_shaft_angle_inner(
             self.grad_estimated_shaft_angle_numerator(alpha_voltage, beta_voltage),
             self.assembly().inverse().estimated_shaft_angle_denominator(
-                &estimated_alpha_sensor_angle,
-                &estimated_beta_sensor_angle,
+                estimated_alpha_sensor_angle,
+                estimated_beta_sensor_angle,
             ),
             self.assembly().inverse().estimated_shaft_angle_numerator(
-                &estimated_alpha_sensor_angle,
-                &estimated_beta_sensor_angle,
+                estimated_alpha_sensor_angle,
+                estimated_beta_sensor_angle,
             ),
             self.grad_estimated_shaft_angle_denominator(alpha_voltage, beta_voltage),
         )
     }
 
     pub fn grad_estimated_shaft_angle_numerator(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-        beta_voltage: &Voltage<Beta>,
-    ) -> Parameters {
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+        beta_voltage: Voltage<F, Beta>,
+    ) -> Parameters<F> {
         let estimated_alpha_sensor_angle = self
             .assembly()
             .alpha_sensor_ref()
@@ -449,10 +451,10 @@ impl<'g> GradientAssemblyModel<'g> {
     }
 
     pub fn grad_estimated_shaft_angle_denominator(
-        &self,
-        alpha_voltage: &Voltage<Alpha>,
-        beta_voltage: &Voltage<Beta>,
-    ) -> Parameters {
+        self,
+        alpha_voltage: Voltage<F, Alpha>,
+        beta_voltage: Voltage<F, Beta>,
+    ) -> Parameters<F> {
         let estimated_alpha_sensor_angle = self
             .assembly()
             .alpha_sensor_ref()

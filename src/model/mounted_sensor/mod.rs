@@ -1,4 +1,5 @@
 use motor_calc_core::parameters::Parameters;
+use num_traits::Float;
 
 use crate::{
     model::{
@@ -22,17 +23,17 @@ pub mod inverse;
 pub mod parameters;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct MountedSensorModel<'m, 's, T: SensorType> {
-    motor: &'m MotorModel,
-    sensor: &'s SensorModel<T>,
-    parameters: MountedSensorParameters,
+pub struct MountedSensorModel<'m, 's, F: Float, T: SensorType> {
+    motor: &'m MotorModel<F>,
+    sensor: &'s SensorModel<F, T>,
+    parameters: MountedSensorParameters<F>,
 }
 
-impl<'m, 's, T: SensorType> MountedSensorModel<'m, 's, T> {
+impl<'m, 's, F: Float, T: SensorType> MountedSensorModel<'m, 's, F, T> {
     pub fn new(
-        motor: &'m MotorModel,
-        sensor: &'s SensorModel<T>,
-        parameters: MountedSensorParameters,
+        motor: &'m MotorModel<F>,
+        sensor: &'s SensorModel<F, T>,
+        parameters: MountedSensorParameters<F>,
     ) -> Self {
         Self {
             motor,
@@ -41,43 +42,39 @@ impl<'m, 's, T: SensorType> MountedSensorModel<'m, 's, T> {
         }
     }
 
-    pub fn motor(&self) -> &'m MotorModel {
+    pub fn motor(self) -> &'m MotorModel<F> {
         self.motor
     }
 
-    pub fn sensor(&self) -> &'s SensorModel<T> {
+    pub fn sensor(self) -> &'s SensorModel<F, T> {
         self.sensor
     }
 
-    pub fn parameters(&self) -> &MountedSensorParameters {
-        &self.parameters
+    pub fn parameters(self) -> MountedSensorParameters<F> {
+        self.parameters
     }
 
-    pub fn forward(&self) -> ForwardMountedSensorModel<'_, '_, '_, T> {
+    pub fn forward(&self) -> ForwardMountedSensorModel<'_, '_, '_, F, T> {
         ForwardMountedSensorModel::new(self)
     }
 
-    pub fn inverse(&self) -> InverseMountedSensorModel<'_, '_, '_, T> {
+    pub fn inverse(&self) -> InverseMountedSensorModel<'_, '_, '_, F, T> {
         InverseMountedSensorModel::new(self)
     }
 
-    pub fn gradient(&self) -> GradientMountedSensorModel<'_, '_, '_, T> {
+    pub fn gradient(&self) -> GradientMountedSensorModel<'_, '_, '_, F, T> {
         GradientMountedSensorModel::new(self)
-    }
-
-    pub fn relative_shaft_angle(&self, shaft_angle: ShaftAngle) -> ShaftAngle {
-        shaft_angle - self.parameters().shaft_angle_offset()
     }
 }
 
-impl<'m, 's> Adjustable for MountedSensorModel<'m, 's, Beta> {
-    fn adjusted(&self, gradient: &Parameters) -> Self {
+impl<'m, 's, F: Float> Adjustable<F> for MountedSensorModel<'m, 's, F, Beta> {
+    fn adjusted(&self, gradient: Parameters<F>) -> Self {
         Self::new(
             self.motor(),
             self.sensor(),
             MountedSensorParameters::new(
                 self.parameters().shaft_angle_offset()
-                    + ShaftAngle::from_radians_f64(gradient.beta_shaft_angle_offset()),
+                    + ShaftAngle::from_radians_f(gradient.beta_shaft_angle_offset()),
             ),
         )
     }

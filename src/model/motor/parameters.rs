@@ -1,32 +1,39 @@
 use core::ops::{Add, Div, Mul, Neg, Sub};
 
 use motor_calc_core::parameters::Parameters;
+use num_traits::Float;
 
 use crate::model::Adjustable;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct MotorParameters {
-    distance_ratio: f64,
+pub struct MotorParameters<F: Float> {
+    distance_ratio: F,
 }
 
-impl MotorParameters {
-    pub fn new(distance_ratio: f64) -> Self {
+impl<F: Float> MotorParameters<F> {
+    pub fn new(distance_ratio: F) -> Self {
         Self { distance_ratio }
     }
 
-    pub fn distance_ratio(&self) -> f64 {
+    pub fn distance_ratio(self) -> F {
         self.distance_ratio
     }
 }
 
-impl Adjustable for MotorParameters {
-    fn adjusted(&self, gradient: &Parameters) -> Self {
+impl<F: Float> Adjustable<F> for MotorParameters<F> {
+    fn adjusted(&self, gradient: Parameters<F>) -> Self {
         Self::new(self.distance_ratio() + gradient.distance_ratio())
     }
 }
 
-impl Add for MotorParameters {
+impl<F: Float> Default for MotorParameters<F> {
+    fn default() -> Self {
+        Self::new(F::from(6.75).expect("6.75 can always be represented with a float"))
+    }
+}
+
+impl<F: Float> Add for MotorParameters<F> {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -34,7 +41,7 @@ impl Add for MotorParameters {
     }
 }
 
-impl Sub for MotorParameters {
+impl<F: Float> Sub for MotorParameters<F> {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
@@ -42,55 +49,23 @@ impl Sub for MotorParameters {
     }
 }
 
-impl Mul<f64> for &MotorParameters {
-    type Output = MotorParameters;
-
-    fn mul(self, rhs: f64) -> Self::Output {
-        MotorParameters::new(self.distance_ratio() * rhs)
-    }
-}
-
-impl Mul<f64> for MotorParameters {
+impl<F: Float> Mul<F> for MotorParameters<F> {
     type Output = Self;
 
-    fn mul(self, rhs: f64) -> Self::Output {
-        &self * rhs
+    fn mul(self, rhs: F) -> Self::Output {
+        Self::new(self.distance_ratio() * rhs)
     }
 }
 
-impl Mul<&MotorParameters> for f64 {
-    type Output = MotorParameters;
-
-    fn mul(self, rhs: &MotorParameters) -> Self::Output {
-        rhs * self
-    }
-}
-
-impl Mul<MotorParameters> for f64 {
-    type Output = MotorParameters;
-
-    fn mul(self, rhs: MotorParameters) -> Self::Output {
-        rhs * self
-    }
-}
-
-impl Div<f64> for &MotorParameters {
-    type Output = MotorParameters;
-
-    fn div(self, rhs: f64) -> Self::Output {
-        MotorParameters::new(self.distance_ratio() / rhs)
-    }
-}
-
-impl Div<f64> for MotorParameters {
+impl<F: Float> Div<F> for MotorParameters<F> {
     type Output = Self;
 
-    fn div(self, rhs: f64) -> Self::Output {
-        &self / rhs
+    fn div(self, rhs: F) -> Self::Output {
+        Self::new(self.distance_ratio() / rhs)
     }
 }
 
-impl Neg for MotorParameters {
+impl<F: Float> Neg for MotorParameters<F> {
     type Output = Self;
 
     fn neg(self) -> Self::Output {

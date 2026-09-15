@@ -1,14 +1,15 @@
 use motor_calc_core::parameters::Parameters;
+use num_traits::Float;
 
 pub mod assembly;
 pub mod motor;
 pub mod mounted_sensor;
 pub mod sensor;
 
-pub trait Adjustable: Sized {
-    fn adjusted(&self, gradient: &Parameters) -> Self;
+pub trait Adjustable<F: Float>: Sized {
+    fn adjusted(&self, gradient: Parameters<F>) -> Self;
 
-    fn adjust(&mut self, gradient: &Parameters) {
+    fn adjust(&mut self, gradient: Parameters<F>) {
         *self = self.adjusted(gradient);
     }
 }

@@ -1,4 +1,5 @@
 use motor_calc_core::parameters::Parameters;
+use num_traits::Float;
 
 use crate::{
     model::mounted_sensor::MountedSensorModel,
@@ -9,26 +10,26 @@ use crate::{
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub struct GradientMountedSensorModel<'g, 'm, 's, T: SensorType> {
-    mounted_sensor: &'g MountedSensorModel<'m, 's, T>,
+pub struct GradientMountedSensorModel<'g, 'm, 's, F: Float, T: SensorType> {
+    mounted_sensor: &'g MountedSensorModel<'m, 's, F, T>,
 }
 
-impl<'g, 'm, 's, T: SensorType> GradientMountedSensorModel<'g, 'm, 's, T> {
-    pub fn new(mounted_sensor: &'g MountedSensorModel<'m, 's, T>) -> Self {
+impl<'g, 'm, 's, F: Float, T: SensorType> GradientMountedSensorModel<'g, 'm, 's, F, T> {
+    pub fn new(mounted_sensor: &'g MountedSensorModel<'m, 's, F, T>) -> Self {
         Self { mounted_sensor }
     }
 
-    pub fn mounted_sensor(&self) -> &MountedSensorModel<'m, 's, T> {
+    pub fn mounted_sensor(self) -> &'g MountedSensorModel<'m, 's, F, T> {
         self.mounted_sensor
     }
 }
 
-impl<'g, 'm, 's> GradientMountedSensorModel<'g, 'm, 's, Beta> {
-    pub fn grad_shaft_angle_offset(&self) -> Parameters {
+impl<'g, 'm, 's, F: Float> GradientMountedSensorModel<'g, 'm, 's, F, Beta> {
+    pub fn grad_shaft_angle_offset(self) -> Parameters<F> {
         Parameters::just_beta_shaft_angle_offset()
     }
 
-    pub fn grad_sin_estimated_shaft_angle_offset(&self) -> Parameters {
+    pub fn grad_sin_estimated_shaft_angle_offset(self) -> Parameters<F> {
         motor_calc_core::gradient::grad_sin_beta_shaft_angle_offset(
             self.mounted_sensor()
                 .parameters()
@@ -38,7 +39,7 @@ impl<'g, 'm, 's> GradientMountedSensorModel<'g, 'm, 's, Beta> {
         )
     }
 
-    pub fn grad_cos_estimated_shaft_angle_offset(&self) -> Parameters {
+    pub fn grad_cos_estimated_shaft_angle_offset(self) -> Parameters<F> {
         motor_calc_core::gradient::grad_cos_beta_shaft_angle_offset(
             self.mounted_sensor()
                 .parameters()
@@ -49,12 +50,13 @@ impl<'g, 'm, 's> GradientMountedSensorModel<'g, 'm, 's, Beta> {
     }
 
     pub fn grad_cos_estimated_relative_shaft_angle(
-        &self,
-        estimated_shaft_angle: ShaftAngle,
-        grad_estimated_shaft_angle: Parameters,
-    ) -> Parameters {
+        self,
+        estimated_shaft_angle: ShaftAngle<F>,
+        grad_estimated_shaft_angle: Parameters<F>,
+    ) -> Parameters<F> {
         motor_calc_core::gradient::grad_cos_estimated_relative_shaft_angle(
             self.mounted_sensor()
+                .forward()
                 .relative_shaft_angle(estimated_shaft_angle)
                 .radians(),
             self.grad_estimated_relative_shaft_angle(grad_estimated_shaft_angle),
@@ -62,9 +64,9 @@ impl<'g, 'm, 's> GradientMountedSensorModel<'g, 'm, 's, Beta> {
     }
 
     pub fn grad_estimated_relative_shaft_angle(
-        &self,
-        grad_estimated_shaft_angle: Parameters,
-    ) -> Parameters {
+        self,
+        grad_estimated_shaft_angle: Parameters<F>,
+    ) -> Parameters<F> {
         motor_calc_core::gradient::grad_estimated_relative_shaft_angle(
             grad_estimated_shaft_angle,
             self.grad_shaft_angle_offset(),
@@ -72,12 +74,13 @@ impl<'g, 'm, 's> GradientMountedSensorModel<'g, 'm, 's, Beta> {
     }
 
     pub fn grad_sin_estimated_relative_shaft_angle(
-        &self,
-        estimated_shaft_angle: ShaftAngle,
-        grad_estimated_shaft_angle: Parameters,
-    ) -> Parameters {
+        self,
+        estimated_shaft_angle: ShaftAngle<F>,
+        grad_estimated_shaft_angle: Parameters<F>,
+    ) -> Parameters<F> {
         motor_calc_core::gradient::grad_sin_estimated_relative_shaft_angle(
             self.mounted_sensor()
+                .forward()
                 .relative_shaft_angle(estimated_shaft_angle)
                 .radians(),
             self.grad_estimated_relative_shaft_angle(grad_estimated_shaft_angle),
