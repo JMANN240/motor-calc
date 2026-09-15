@@ -5,6 +5,21 @@ version = "0.1.4"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 
+[lib]
+bench = false
+
 [dependencies]
 libm = "0.2.16"
 motor-calc-core = { path = "../motor-calc-core" }
+num-traits = { version = "0.2.19", default-features = false, features = ["libm"] }
+
+[dev-dependencies]
+criterion = "0.8.2"
+
+[[bench]]
+name = "assembly"
+harness = false
+
+[[bench]]
+name = "assembly_gradient"
+harness = false
