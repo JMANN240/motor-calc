@@ -1,13 +1,24 @@
+use motor_calc_core::parameters::Parameters;
+
 use crate::{
     model::{
-        assembly::{gradient::GradientAssemblyModel, inverse::InverseAssemblyModel, parameters::AssemblyParameters}, motor::MotorModel, mounted_sensor::MountedSensorModel, sensor::SensorModel,
-    }, types::sensor_type::{Alpha, Beta},
+        Adjustable,
+        assembly::{
+            gradient::GradientAssemblyModel, inverse::InverseAssemblyModel,
+            parameters::AssemblyParameters,
+        },
+        motor::MotorModel,
+        mounted_sensor::MountedSensorModel,
+        sensor::SensorModel,
+    },
+    types::sensor_type::{Alpha, Beta},
 };
 
 pub mod gradient;
 pub mod inverse;
 pub mod parameters;
 
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct AssemblyModel {
     motor: MotorModel,
@@ -80,6 +91,17 @@ impl AssemblyModel {
             self.motor_ref(),
             self.beta_sensor_ref(),
             self.parameters().mounted_beta_sensor_parameters(),
+        )
+    }
+}
+
+impl Adjustable for AssemblyModel {
+    fn adjusted(&self, gradient: &Parameters) -> Self {
+        Self::new(
+            self.motor().adjusted(gradient),
+            self.alpha_sensor_ref().adjusted(gradient),
+            self.beta_sensor_ref().adjusted(gradient),
+            self.parameters().adjusted(gradient),
         )
     }
 }

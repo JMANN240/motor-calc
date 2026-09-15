@@ -22,12 +22,12 @@ impl<'i, 'm, 's, T: SensorType> InverseMountedSensorModel<'i, 'm, 's, T> {
     }
 
     pub fn estimated_relative_shaft_angle(&self, estimated_shaft_angle: ShaftAngle) -> ShaftAngle {
-        ShaftAngle::new(motor_calc_core::forward::relative_shaft_angle(
-            estimated_shaft_angle.angle(),
+        ShaftAngle::from_radians_f64(motor_calc_core::forward::relative_shaft_angle(
+            estimated_shaft_angle.radians(),
             self.mounted_sensor()
                 .parameters()
                 .shaft_angle_offset()
-                .angle(),
+                .radians(),
         ))
     }
 }
@@ -56,7 +56,7 @@ impl<'i, 'm, 's> InverseMountedSensorModel<'i, 'm, 's, Alpha> {
         estimated_alpha_sensor_angle: &SensorAngle<Alpha>,
     ) -> f64 {
         motor_calc_core::inverse::estimated_alpha_displacement_numerator(
-            estimated_alpha_sensor_angle.angle(),
+            estimated_alpha_sensor_angle.radians(),
             self.mounted_sensor().motor().parameters().distance_ratio(),
         )
     }
@@ -74,8 +74,8 @@ impl<'i, 'm, 's> InverseMountedSensorModel<'i, 'm, 's, Alpha> {
         estimated_shaft_angle: ShaftAngle,
     ) -> f64 {
         motor_calc_core::inverse::estimated_alpha_displacement_denominator(
-            estimated_alpha_sensor_angle.angle(),
-            estimated_shaft_angle.angle(),
+            estimated_alpha_sensor_angle.radians(),
+            estimated_shaft_angle.radians(),
         )
     }
 }
@@ -104,7 +104,7 @@ impl<'i, 'm, 's> InverseMountedSensorModel<'i, 'm, 's, Beta> {
         estimated_beta_sensor_angle: &SensorAngle<Beta>,
     ) -> f64 {
         motor_calc_core::inverse::estimated_beta_displacement_numerator(
-            estimated_beta_sensor_angle.angle(),
+            estimated_beta_sensor_angle.radians(),
             self.mounted_sensor().motor().parameters().distance_ratio(),
         )
     }
@@ -122,9 +122,9 @@ impl<'i, 'm, 's> InverseMountedSensorModel<'i, 'm, 's, Beta> {
         estimated_shaft_angle: ShaftAngle,
     ) -> f64 {
         motor_calc_core::inverse::estimated_beta_displacement_denominator(
-            estimated_beta_sensor_angle.angle(),
+            estimated_beta_sensor_angle.radians(),
             self.estimated_relative_shaft_angle(estimated_shaft_angle)
-                .angle(),
+                .radians(),
         )
     }
 }

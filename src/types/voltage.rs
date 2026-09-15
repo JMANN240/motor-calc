@@ -1,17 +1,21 @@
-use core::{marker::PhantomData, ops::{Add, Deref, Div, Mul, Neg, Sub}};
+use core::{
+    marker::PhantomData,
+    ops::{Add, Deref, Div, Mul, Neg, Sub},
+};
 
 use crate::types::sensor_type::SensorType;
 
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Voltage<T: SensorType> {
-    voltage: f64,
+    volts: f64,
     sensor_type: PhantomData<T>,
 }
 
 impl<T: SensorType> Voltage<T> {
-    pub fn from_volts_f64(voltage: f64) -> Self {
+    pub fn from_volts_f64(volts: f64) -> Self {
         Self {
-            voltage,
+            volts,
             sensor_type: PhantomData,
         }
     }
@@ -20,8 +24,8 @@ impl<T: SensorType> Voltage<T> {
         Self::from_volts_f64(millivolts as f64 / 1000.0)
     }
 
-    pub fn voltage(&self) -> f64 {
-        self.voltage
+    pub fn volts(&self) -> f64 {
+        self.volts
     }
 }
 
@@ -29,7 +33,7 @@ impl<T: SensorType> Deref for Voltage<T> {
     type Target = f64;
 
     fn deref(&self) -> &Self::Target {
-        &self.voltage
+        &self.volts
     }
 }
 
@@ -61,7 +65,7 @@ impl<T: SensorType> Add for &Voltage<T> {
     type Output = Voltage<T>;
 
     fn add(self, rhs: Self) -> Self::Output {
-        Voltage::from_volts_f64(self.voltage() + rhs.voltage())
+        Voltage::from_volts_f64(self.volts() + rhs.volts())
     }
 }
 
@@ -93,7 +97,7 @@ impl<T: SensorType> Sub for &Voltage<T> {
     type Output = Voltage<T>;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        Voltage::from_volts_f64(self.voltage() - rhs.voltage())
+        Voltage::from_volts_f64(self.volts() - rhs.volts())
     }
 }
 
@@ -101,7 +105,7 @@ impl<T: SensorType> Mul<f64> for &Voltage<T> {
     type Output = Voltage<T>;
 
     fn mul(self, rhs: f64) -> Self::Output {
-        Voltage::from_volts_f64(self.voltage() * rhs)
+        Voltage::from_volts_f64(self.volts() * rhs)
     }
 }
 
@@ -133,7 +137,7 @@ impl<T: SensorType> Div<f64> for &Voltage<T> {
     type Output = Voltage<T>;
 
     fn div(self, rhs: f64) -> Self::Output {
-        Voltage::from_volts_f64(self.voltage() / rhs)
+        Voltage::from_volts_f64(self.volts() / rhs)
     }
 }
 
@@ -149,7 +153,7 @@ impl<T: SensorType> Neg for &Voltage<T> {
     type Output = Voltage<T>;
 
     fn neg(self) -> Self::Output {
-        Voltage::from_volts_f64(-self.voltage())
+        Voltage::from_volts_f64(-self.volts())
     }
 }
 

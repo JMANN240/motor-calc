@@ -18,20 +18,20 @@ impl<'f, 'm, 's, T: SensorType> ForwardMountedSensorModel<'f, 'm, 's, T> {
     }
 
     pub fn sensor_angle(&self, displacement: f64, shaft_angle: ShaftAngle) -> SensorAngle<T> {
-        SensorAngle::new(motor_calc_core::forward::sensor_angle(
+        SensorAngle::from_radians_f64(motor_calc_core::forward::sensor_angle(
             displacement,
-            self.relative_shaft_angle(shaft_angle).angle(),
+            self.relative_shaft_angle(shaft_angle).radians(),
             self.mounted_sensor().motor().parameters().distance_ratio(),
         ))
     }
 
     pub fn relative_shaft_angle(&self, shaft_angle: ShaftAngle) -> ShaftAngle {
-        ShaftAngle::new(motor_calc_core::forward::relative_shaft_angle(
-            shaft_angle.angle(),
+        ShaftAngle::from_radians_f64(motor_calc_core::forward::relative_shaft_angle(
+            shaft_angle.radians(),
             self.mounted_sensor()
                 .parameters()
                 .shaft_angle_offset()
-                .angle(),
+                .radians(),
         ))
     }
 }

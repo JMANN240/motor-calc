@@ -2,6 +2,7 @@ use core::ops::{Add, Div, Mul, Neg, Sub};
 
 use crate::types::shaft_angle::ShaftAngle;
 
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MountedSensorParameters {
     shaft_angle_offset: ShaftAngle,

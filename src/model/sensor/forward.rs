@@ -22,8 +22,8 @@ impl<'f, T: SensorType> ForwardSensorModel<'f, T> {
 
         Voltage::<T>::from_volts_f64(motor_calc_core::forward::voltage(
             sensor_parameters.voltage_scale(),
-            sensor_angle.angle(),
-            sensor_parameters.voltage_offset().voltage(),
+            sensor_angle.radians(),
+            sensor_parameters.voltage_offset().volts(),
         ))
     }
 }

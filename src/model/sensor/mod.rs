@@ -1,7 +1,14 @@
+use motor_calc_core::parameters::Parameters;
+
 use crate::{
-    model::sensor::{
-        forward::ForwardSensorModel, gradient::GradientSensorModel, inverse::InverseSensorModel, parameters::SensorParameters,
-    }, types::sensor_type::SensorType,
+    model::{
+        Adjustable,
+        sensor::{
+            forward::ForwardSensorModel, gradient::GradientSensorModel,
+            inverse::InverseSensorModel, parameters::SensorParameters,
+        },
+    },
+    types::sensor_type::SensorType,
 };
 
 pub mod forward;
@@ -9,6 +16,7 @@ pub mod gradient;
 pub mod inverse;
 pub mod parameters;
 
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct SensorModel<T: SensorType> {
     parameters: SensorParameters<T>,
@@ -33,5 +41,14 @@ impl<T: SensorType> SensorModel<T> {
 
     pub fn gradient(&self) -> GradientSensorModel<'_, T> {
         GradientSensorModel::new(self)
+    }
+}
+
+impl<T: SensorType> Adjustable for SensorModel<T>
+where
+    SensorParameters<T>: Adjustable,
+{
+    fn adjusted(&self, gradient: &Parameters) -> Self {
+        Self::new(self.parameters().adjusted(gradient))
     }
 }

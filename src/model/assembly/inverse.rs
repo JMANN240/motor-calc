@@ -1,4 +1,4 @@
-use libm::{atan2, pow};
+use libm::atan2;
 
 use crate::{
     model::assembly::AssemblyModel,
@@ -24,7 +24,7 @@ impl<'i> InverseAssemblyModel<'i> {
     }
 
     pub fn squared_error_estimated_displacement(&self, error_estimated_displacement: f64) -> f64 {
-        pow(error_estimated_displacement, 2.0)
+        error_estimated_displacement * error_estimated_displacement
     }
 
     pub fn error_estimated_displacement(
@@ -48,12 +48,12 @@ impl<'i> InverseAssemblyModel<'i> {
         let maybe_alpha_estimated_displacement = assembly
             .mounted_alpha_sensor()
             .inverse()
-            .estimated_displacement(&estimated_alpha_sensor_angle, estimated_shaft_angle);
+            .estimated_displacement(estimated_alpha_sensor_angle, estimated_shaft_angle);
 
         let maybe_beta_estimated_displacement = assembly
             .mounted_beta_sensor()
             .inverse()
-            .estimated_displacement(&estimated_beta_sensor_angle, estimated_shaft_angle);
+            .estimated_displacement(estimated_beta_sensor_angle, estimated_shaft_angle);
 
         match (
             maybe_alpha_estimated_displacement,
@@ -75,7 +75,7 @@ impl<'i> InverseAssemblyModel<'i> {
         estimated_alpha_sensor_angle: &SensorAngle<Alpha>,
         estimated_beta_sensor_angle: &SensorAngle<Beta>,
     ) -> ShaftAngle {
-        ShaftAngle::new(atan2(
+        ShaftAngle::from_radians_f64(atan2(
             self.estimated_shaft_angle_numerator(
                 estimated_alpha_sensor_angle,
                 estimated_beta_sensor_angle,
@@ -87,19 +87,33 @@ impl<'i> InverseAssemblyModel<'i> {
         ))
     }
 
+    pub fn estimated_shaft_angle_inner(
+        &self,
+        estimated_alpha_sensor_angle: &SensorAngle<Alpha>,
+        estimated_beta_sensor_angle: &SensorAngle<Beta>,
+    ) -> f64 {
+        self.estimated_shaft_angle_numerator(
+            estimated_alpha_sensor_angle,
+            estimated_beta_sensor_angle,
+        ) / self.estimated_shaft_angle_denominator(
+            estimated_alpha_sensor_angle,
+            estimated_beta_sensor_angle,
+        )
+    }
+
     pub fn estimated_shaft_angle_numerator(
         &self,
         estimated_alpha_sensor_angle: &SensorAngle<Alpha>,
         estimated_beta_sensor_angle: &SensorAngle<Beta>,
     ) -> f64 {
         motor_calc_core::inverse::estimated_shaft_angle_numerator(
-            estimated_alpha_sensor_angle.angle(),
-            estimated_beta_sensor_angle.angle(),
+            estimated_alpha_sensor_angle.radians(),
+            estimated_beta_sensor_angle.radians(),
             self.assembly()
                 .parameters()
                 .mounted_beta_sensor_parameters()
                 .shaft_angle_offset()
-                .angle(),
+                .radians(),
         )
     }
 
@@ -109,13 +123,13 @@ impl<'i> InverseAssemblyModel<'i> {
         estimated_beta_sensor_angle: &SensorAngle<Beta>,
     ) -> f64 {
         motor_calc_core::inverse::estimated_shaft_angle_denominator(
-            estimated_alpha_sensor_angle.angle(),
-            estimated_beta_sensor_angle.angle(),
+            estimated_alpha_sensor_angle.radians(),
+            estimated_beta_sensor_angle.radians(),
             self.assembly()
                 .parameters()
                 .mounted_beta_sensor_parameters()
                 .shaft_angle_offset()
-                .angle(),
+                .radians(),
         )
     }
 }

@@ -47,8 +47,8 @@ impl<'g> GradientSensorModel<'g, Alpha> {
         motor_calc_core::gradient::grad_estimated_alpha_sensor_angle(
             self.grad_estimated_offset_voltage(),
             self.sensor().parameters().voltage_scale(),
-            alpha_voltage.voltage(),
-            self.sensor().parameters().voltage_offset().voltage(),
+            alpha_voltage.volts(),
+            self.sensor().parameters().voltage_offset().volts(),
             self.grad_estimated_voltage_scale(),
         )
     }
@@ -58,7 +58,7 @@ impl<'g> GradientSensorModel<'g, Alpha> {
             self.sensor()
                 .inverse()
                 .estimated_sensor_angle(alpha_voltage)
-                .angle(),
+                .radians(),
             self.grad_estimated_sensor_angle(alpha_voltage),
         )
     }
@@ -88,8 +88,8 @@ impl<'g> GradientSensorModel<'g, Beta> {
         motor_calc_core::gradient::grad_estimated_alpha_sensor_angle(
             self.grad_estimated_offset_voltage(),
             self.sensor().parameters().voltage_scale(),
-            beta_voltage.voltage(),
-            self.sensor().parameters().voltage_offset().voltage(),
+            beta_voltage.volts(),
+            self.sensor().parameters().voltage_offset().volts(),
             self.grad_estimated_voltage_scale(),
         )
     }
@@ -99,7 +99,7 @@ impl<'g> GradientSensorModel<'g, Beta> {
             self.sensor()
                 .inverse()
                 .estimated_sensor_angle(beta_voltage)
-                .angle(),
+                .radians(),
             self.grad_estimated_sensor_angle(beta_voltage),
         )
     }

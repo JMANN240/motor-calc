@@ -1,9 +1,19 @@
 use core::{
-    f64::consts::TAU, ops::{Add, Div, Mul, Neg, Sub},
+    f64::consts::TAU,
+    ops::{Add, Div, Mul, Neg, Sub},
 };
 
-use crate::types::{sensor_type::SensorType, voltage::Voltage};
+use motor_calc_core::parameters::Parameters;
 
+use crate::{
+    model::Adjustable,
+    types::{
+        sensor_type::{Alpha, Beta, SensorType},
+        voltage::Voltage,
+    },
+};
+
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct SensorParameters<T: SensorType> {
     voltage_scale: f64,
@@ -24,6 +34,24 @@ impl<T: SensorType> SensorParameters<T> {
 
     pub fn voltage_offset(&self) -> &Voltage<T> {
         &self.voltage_offset
+    }
+}
+
+impl Adjustable for SensorParameters<Alpha> {
+    fn adjusted(&self, gradient: &Parameters) -> Self {
+        Self::new(
+            self.voltage_scale() + gradient.alpha_voltage_scale(),
+            self.voltage_offset() + Voltage::from_volts_f64(gradient.alpha_voltage_offset()),
+        )
+    }
+}
+
+impl Adjustable for SensorParameters<Beta> {
+    fn adjusted(&self, gradient: &Parameters) -> Self {
+        Self::new(
+            self.voltage_scale() + gradient.beta_voltage_scale(),
+            self.voltage_offset() + Voltage::from_volts_f64(gradient.beta_voltage_offset()),
+        )
     }
 }
 

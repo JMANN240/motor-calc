@@ -1,9 +1,13 @@
 use core::{f64::consts::TAU, ops::Mul};
 
+use motor_calc_core::parameters::Parameters;
+
 use crate::{
-    model::mounted_sensor::parameters::MountedSensorParameters, types::shaft_angle::ShaftAngle,
+    model::{Adjustable, mounted_sensor::parameters::MountedSensorParameters},
+    types::shaft_angle::ShaftAngle,
 };
 
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct AssemblyParameters {
     mounted_alpha_sensor_parameters: MountedSensorParameters,
@@ -30,11 +34,23 @@ impl AssemblyParameters {
     }
 }
 
+impl Adjustable for AssemblyParameters {
+    fn adjusted(&self, gradient: &Parameters) -> Self {
+        Self::new(
+            self.mounted_alpha_sensor_parameters(),
+            MountedSensorParameters::new(
+                self.mounted_beta_sensor_parameters().shaft_angle_offset()
+                    + ShaftAngle::from_radians_f64(gradient.beta_shaft_angle_offset()),
+            ),
+        )
+    }
+}
+
 impl Default for AssemblyParameters {
     fn default() -> Self {
         Self::new(
-            MountedSensorParameters::new(ShaftAngle::new(0.0)),
-            MountedSensorParameters::new(ShaftAngle::new(2.0 * TAU / 7.0)),
+            MountedSensorParameters::new(ShaftAngle::from_radians_f64(0.0)),
+            MountedSensorParameters::new(ShaftAngle::from_radians_f64(2.0 * TAU / 7.0)),
         )
     }
 }

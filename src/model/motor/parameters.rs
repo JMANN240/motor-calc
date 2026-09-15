@@ -1,5 +1,10 @@
 use core::ops::{Add, Div, Mul, Neg, Sub};
 
+use motor_calc_core::parameters::Parameters;
+
+use crate::model::Adjustable;
+
+#[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MotorParameters {
     distance_ratio: f64,
@@ -12,6 +17,12 @@ impl MotorParameters {
 
     pub fn distance_ratio(&self) -> f64 {
         self.distance_ratio
+    }
+}
+
+impl Adjustable for MotorParameters {
+    fn adjusted(&self, gradient: &Parameters) -> Self {
+        Self::new(self.distance_ratio() + gradient.distance_ratio())
     }
 }
 

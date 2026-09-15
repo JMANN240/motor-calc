@@ -1,9 +1,19 @@
+use motor_calc_core::parameters::Parameters;
+
 use crate::{
     model::{
-        motor::MotorModel, mounted_sensor::{
-            forward::ForwardMountedSensorModel, gradient::GradientMountedSensorModel, inverse::InverseMountedSensorModel, parameters::MountedSensorParameters,
-        }, sensor::SensorModel,
-    }, types::{sensor_type::SensorType, shaft_angle::ShaftAngle},
+        Adjustable,
+        motor::MotorModel,
+        mounted_sensor::{
+            forward::ForwardMountedSensorModel, gradient::GradientMountedSensorModel,
+            inverse::InverseMountedSensorModel, parameters::MountedSensorParameters,
+        },
+        sensor::SensorModel,
+    },
+    types::{
+        sensor_type::{Beta, SensorType},
+        shaft_angle::ShaftAngle,
+    },
 };
 
 pub mod forward;
@@ -31,11 +41,11 @@ impl<'m, 's, T: SensorType> MountedSensorModel<'m, 's, T> {
         }
     }
 
-    pub fn motor(&self) -> &MotorModel {
+    pub fn motor(&self) -> &'m MotorModel {
         self.motor
     }
 
-    pub fn sensor(&self) -> &SensorModel<T> {
+    pub fn sensor(&self) -> &'s SensorModel<T> {
         self.sensor
     }
 
@@ -57,5 +67,18 @@ impl<'m, 's, T: SensorType> MountedSensorModel<'m, 's, T> {
 
     pub fn relative_shaft_angle(&self, shaft_angle: ShaftAngle) -> ShaftAngle {
         shaft_angle - self.parameters().shaft_angle_offset()
+    }
+}
+
+impl<'m, 's> Adjustable for MountedSensorModel<'m, 's, Beta> {
+    fn adjusted(&self, gradient: &Parameters) -> Self {
+        Self::new(
+            self.motor(),
+            self.sensor(),
+            MountedSensorParameters::new(
+                self.parameters().shaft_angle_offset()
+                    + ShaftAngle::from_radians_f64(gradient.beta_shaft_angle_offset()),
+            ),
+        )
     }
 }
