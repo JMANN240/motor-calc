@@ -133,7 +133,7 @@ impl<'g, F: Float> GradientAssemblyModel<'g, F> {
             .estimated_sensor_angle(alpha_voltage);
 
         motor_calc_core::gradient::grad_estimated_alpha_displacement_numerator(
-            estimated_alpha_sensor_angle.radians(),
+            estimated_alpha_sensor_angle.tan(),
             Parameters::just_distance_ratio(),
             self.assembly().motor().parameters().distance_ratio(),
             self.assembly()
@@ -164,8 +164,8 @@ impl<'g, F: Float> GradientAssemblyModel<'g, F> {
             self.assembly()
                 .inverse()
                 .estimated_shaft_angle(estimated_alpha_sensor_angle, estimated_beta_sensor_angle)
-                .radians(),
-            estimated_alpha_sensor_angle.radians(),
+                .cos(),
+            estimated_alpha_sensor_angle.tan(),
             self.assembly()
                 .alpha_sensor_ref()
                 .gradient()
@@ -234,7 +234,7 @@ impl<'g, F: Float> GradientAssemblyModel<'g, F> {
             .estimated_sensor_angle(beta_voltage);
 
         motor_calc_core::gradient::grad_estimated_beta_displacement_numerator(
-            estimated_beta_sensor_angle.radians(),
+            estimated_beta_sensor_angle.tan(),
             Parameters::just_distance_ratio(),
             self.assembly().motor().parameters().distance_ratio(),
             self.assembly()
@@ -274,8 +274,8 @@ impl<'g, F: Float> GradientAssemblyModel<'g, F> {
                 .mounted_beta_sensor()
                 .inverse()
                 .estimated_relative_shaft_angle(estimated_shaft_angle)
-                .radians(),
-            estimated_beta_sensor_angle.radians(),
+                .cos(),
+            estimated_beta_sensor_angle.tan(),
             self.assembly()
                 .beta_sensor_ref()
                 .gradient()
@@ -318,7 +318,7 @@ impl<'g, F: Float> GradientAssemblyModel<'g, F> {
             self.assembly()
                 .inverse()
                 .estimated_shaft_angle(estimated_alpha_sensor_angle, estimated_beta_sensor_angle)
-                .radians(),
+                .sin(),
             self.grad_estimated_shaft_angle(alpha_voltage, beta_voltage),
         )
     }
@@ -344,7 +344,7 @@ impl<'g, F: Float> GradientAssemblyModel<'g, F> {
             self.assembly()
                 .inverse()
                 .estimated_shaft_angle(estimated_alpha_sensor_angle, estimated_beta_sensor_angle)
-                .radians(),
+                .cos(),
             self.grad_estimated_shaft_angle(alpha_voltage, beta_voltage),
         )
     }
@@ -423,22 +423,26 @@ impl<'g, F: Float> GradientAssemblyModel<'g, F> {
             .inverse()
             .estimated_sensor_angle(beta_voltage);
 
+        let (sin_estimated_beta_shaft_angle_offset, cos_estimated_beta_shaft_angle_offset) = self
+            .assembly()
+            .parameters()
+            .mounted_beta_sensor_parameters()
+            .shaft_angle_offset()
+            .sin_cos();
+
         motor_calc_core::gradient::grad_estimated_shaft_angle_numerator(
             self.assembly()
                 .alpha_sensor_ref()
                 .gradient()
                 .grad_tan_estimated_sensor_angle(alpha_voltage),
-            estimated_beta_sensor_angle.radians(),
-            estimated_alpha_sensor_angle.radians(),
+            estimated_beta_sensor_angle.tan(),
+            estimated_alpha_sensor_angle.tan(),
             self.assembly()
                 .beta_sensor_ref()
                 .gradient()
                 .grad_tan_estimated_sensor_angle(beta_voltage),
-            self.assembly()
-                .parameters()
-                .mounted_beta_sensor_parameters()
-                .shaft_angle_offset()
-                .radians(),
+            sin_estimated_beta_shaft_angle_offset,
+            cos_estimated_beta_shaft_angle_offset,
             self.assembly()
                 .mounted_beta_sensor()
                 .gradient()
@@ -467,18 +471,22 @@ impl<'g, F: Float> GradientAssemblyModel<'g, F> {
             .inverse()
             .estimated_sensor_angle(beta_voltage);
 
+        let (sin_estimated_beta_shaft_angle_offset, cos_estimated_beta_shaft_angle_offset) = self
+            .assembly()
+            .parameters()
+            .mounted_beta_sensor_parameters()
+            .shaft_angle_offset()
+            .sin_cos();
+
         motor_calc_core::gradient::grad_estimated_shaft_angle_denominator(
             self.assembly()
                 .alpha_sensor_ref()
                 .gradient()
                 .grad_tan_estimated_sensor_angle(alpha_voltage),
-            estimated_beta_sensor_angle.radians(),
-            self.assembly()
-                .parameters()
-                .mounted_beta_sensor_parameters()
-                .shaft_angle_offset()
-                .radians(),
-            estimated_alpha_sensor_angle.radians(),
+            estimated_beta_sensor_angle.tan(),
+            sin_estimated_beta_shaft_angle_offset,
+            cos_estimated_beta_shaft_angle_offset,
+            estimated_alpha_sensor_angle.tan(),
             self.assembly()
                 .beta_sensor_ref()
                 .gradient()

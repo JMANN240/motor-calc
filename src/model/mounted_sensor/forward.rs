@@ -20,9 +20,13 @@ impl<'f, 'm, 's, F: Float, T: SensorType> ForwardMountedSensorModel<'f, 'm, 's, 
     }
 
     pub fn sensor_angle(self, displacement: F, shaft_angle: ShaftAngle<F>) -> SensorAngle<F, T> {
+        let (sin_relative_shaft_angle, cos_relative_shaft_angle) =
+            self.relative_shaft_angle(shaft_angle).sin_cos();
+
         SensorAngle::from_radians_f(motor_calc_core::forward::sensor_angle(
             displacement,
-            self.relative_shaft_angle(shaft_angle).radians(),
+            sin_relative_shaft_angle,
+            cos_relative_shaft_angle,
             self.mounted_sensor().motor().parameters().distance_ratio(),
         ))
     }

@@ -61,7 +61,7 @@ impl<'i, 'm, 's, F: Float> InverseMountedSensorModel<'i, 'm, 's, F, Alpha> {
         estimated_alpha_sensor_angle: SensorAngle<F, Alpha>,
     ) -> F {
         motor_calc_core::inverse::estimated_alpha_displacement_numerator(
-            estimated_alpha_sensor_angle.radians(),
+            estimated_alpha_sensor_angle.tan(),
             self.mounted_sensor().motor().parameters().distance_ratio(),
         )
     }
@@ -78,9 +78,13 @@ impl<'i, 'm, 's, F: Float> InverseMountedSensorModel<'i, 'm, 's, F, Alpha> {
         estimated_alpha_sensor_angle: SensorAngle<F, Alpha>,
         estimated_shaft_angle: ShaftAngle<F>,
     ) -> F {
+        let (sin_estimated_shaft_angle, cos_estimated_shaft_angle) =
+            estimated_shaft_angle.sin_cos();
+
         motor_calc_core::inverse::estimated_alpha_displacement_denominator(
-            estimated_alpha_sensor_angle.radians(),
-            estimated_shaft_angle.radians(),
+            estimated_alpha_sensor_angle.tan(),
+            sin_estimated_shaft_angle,
+            cos_estimated_shaft_angle,
         )
     }
 }
@@ -109,7 +113,7 @@ impl<'i, 'm, 's, F: Float> InverseMountedSensorModel<'i, 'm, 's, F, Beta> {
         estimated_beta_sensor_angle: SensorAngle<F, Beta>,
     ) -> F {
         motor_calc_core::inverse::estimated_beta_displacement_numerator(
-            estimated_beta_sensor_angle.radians(),
+            estimated_beta_sensor_angle.tan(),
             self.mounted_sensor().motor().parameters().distance_ratio(),
         )
     }
@@ -126,10 +130,14 @@ impl<'i, 'm, 's, F: Float> InverseMountedSensorModel<'i, 'm, 's, F, Beta> {
         estimated_beta_sensor_angle: SensorAngle<F, Beta>,
         estimated_shaft_angle: ShaftAngle<F>,
     ) -> F {
+        let (sin_estimated_relative_shaft_angle, cos_estimated_relative_shaft_angle) = self
+            .estimated_relative_shaft_angle(estimated_shaft_angle)
+            .sin_cos();
+
         motor_calc_core::inverse::estimated_beta_displacement_denominator(
-            estimated_beta_sensor_angle.radians(),
-            self.estimated_relative_shaft_angle(estimated_shaft_angle)
-                .radians(),
+            estimated_beta_sensor_angle.tan(),
+            sin_estimated_relative_shaft_angle,
+            cos_estimated_relative_shaft_angle,
         )
     }
 }

@@ -34,7 +34,7 @@ impl<'g, 'm, 's, F: Float> GradientMountedSensorModel<'g, 'm, 's, F, Beta> {
             self.mounted_sensor()
                 .parameters()
                 .shaft_angle_offset()
-                .radians(),
+                .cos(),
             self.grad_shaft_angle_offset(),
         )
     }
@@ -44,7 +44,7 @@ impl<'g, 'm, 's, F: Float> GradientMountedSensorModel<'g, 'm, 's, F, Beta> {
             self.mounted_sensor()
                 .parameters()
                 .shaft_angle_offset()
-                .radians(),
+                .sin(),
             self.grad_shaft_angle_offset(),
         )
     }
@@ -58,7 +58,7 @@ impl<'g, 'm, 's, F: Float> GradientMountedSensorModel<'g, 'm, 's, F, Beta> {
             self.mounted_sensor()
                 .forward()
                 .relative_shaft_angle(estimated_shaft_angle)
-                .radians(),
+                .sin(),
             self.grad_estimated_relative_shaft_angle(grad_estimated_shaft_angle),
         )
     }
@@ -82,7 +82,7 @@ impl<'g, 'm, 's, F: Float> GradientMountedSensorModel<'g, 'm, 's, F, Beta> {
             self.mounted_sensor()
                 .forward()
                 .relative_shaft_angle(estimated_shaft_angle)
-                .radians(),
+                .cos(),
             self.grad_estimated_relative_shaft_angle(grad_estimated_shaft_angle),
         )
     }

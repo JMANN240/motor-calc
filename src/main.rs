@@ -48,7 +48,7 @@ fn main() {
 
     let gain = 0.01;
 
-    for i in 0..=1000000 {
+    for i in 0..=10000000 {
         let assembly = AssemblyModel::new(
             MotorModel::new(MotorParameters::new(distance_ratio)),
             SensorModel::new(SensorParameters::new(

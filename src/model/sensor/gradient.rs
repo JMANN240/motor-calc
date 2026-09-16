@@ -62,7 +62,7 @@ impl<'g, F: Float> GradientSensorModel<'g, F, Alpha> {
             self.sensor()
                 .inverse()
                 .estimated_sensor_angle(alpha_voltage)
-                .radians(),
+                .tan(),
             self.grad_estimated_sensor_angle(alpha_voltage),
         )
     }
@@ -103,7 +103,7 @@ impl<'g, F: Float> GradientSensorModel<'g, F, Beta> {
             self.sensor()
                 .inverse()
                 .estimated_sensor_angle(beta_voltage)
-                .radians(),
+                .tan(),
             self.grad_estimated_sensor_angle(beta_voltage),
         )
     }

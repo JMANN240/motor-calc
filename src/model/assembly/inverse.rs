@@ -103,14 +103,21 @@ impl<'i, F: Float> InverseAssemblyModel<'i, F> {
         estimated_alpha_sensor_angle: SensorAngle<F, Alpha>,
         estimated_beta_sensor_angle: SensorAngle<F, Beta>,
     ) -> F {
+        let (
+            sin_estimated_beta_sensor_shaft_angle_offset,
+            cos_estimated_beta_sensor_shaft_angle_offset,
+        ) = self
+            .assembly()
+            .parameters()
+            .mounted_beta_sensor_parameters()
+            .shaft_angle_offset()
+            .sin_cos();
+
         motor_calc_core::inverse::estimated_shaft_angle_numerator(
-            estimated_alpha_sensor_angle.radians(),
-            estimated_beta_sensor_angle.radians(),
-            self.assembly()
-                .parameters()
-                .mounted_beta_sensor_parameters()
-                .shaft_angle_offset()
-                .radians(),
+            estimated_alpha_sensor_angle.tan(),
+            estimated_beta_sensor_angle.tan(),
+            sin_estimated_beta_sensor_shaft_angle_offset,
+            cos_estimated_beta_sensor_shaft_angle_offset,
         )
     }
 
@@ -119,14 +126,21 @@ impl<'i, F: Float> InverseAssemblyModel<'i, F> {
         estimated_alpha_sensor_angle: SensorAngle<F, Alpha>,
         estimated_beta_sensor_angle: SensorAngle<F, Beta>,
     ) -> F {
+        let (
+            sin_estimated_beta_sensor_shaft_angle_offset,
+            cos_estimated_beta_sensor_shaft_angle_offset,
+        ) = self
+            .assembly()
+            .parameters()
+            .mounted_beta_sensor_parameters()
+            .shaft_angle_offset()
+            .sin_cos();
+
         motor_calc_core::inverse::estimated_shaft_angle_denominator(
-            estimated_alpha_sensor_angle.radians(),
-            estimated_beta_sensor_angle.radians(),
-            self.assembly()
-                .parameters()
-                .mounted_beta_sensor_parameters()
-                .shaft_angle_offset()
-                .radians(),
+            estimated_alpha_sensor_angle.tan(),
+            estimated_beta_sensor_angle.tan(),
+            sin_estimated_beta_sensor_shaft_angle_offset,
+            cos_estimated_beta_sensor_shaft_angle_offset,
         )
     }
 }
