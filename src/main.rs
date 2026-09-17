@@ -2,6 +2,7 @@ use std::f64::consts::TAU;
 
 use motor_calc::{
     model::{
+        Adjustable,
         assembly::{AssemblyModel, parameters::AssemblyParameters},
         motor::{MotorModel, parameters::MotorParameters},
         mounted_sensor::parameters::MountedSensorParameters,
@@ -16,7 +17,7 @@ use motor_calc::{
 use motor_calc_core::parameters::Parameters;
 
 fn main() {
-    let voltages = [
+    let mut voltages = [
         (1800, 3719),
         (1233, 3551),
         (1122, 2894),
@@ -39,52 +40,69 @@ fn main() {
     })
     .collect::<Vec<_>>();
 
-    let mut distance_ratio = 6.75;
-    let mut beta_shaft_angle_offset = 2.0 * TAU / 7.0;
-    let mut alpha_voltage_scale = 48.0 / TAU;
-    let mut alpha_voltage_offset = 2.5;
-    let mut beta_voltage_scale = 48.0 / TAU;
-    let mut beta_voltage_offset = 2.5;
+    let mut parameters = Parameters::new(6.75, 2.0 * TAU / 7.0, 48.0 / TAU, 2.5, 48.0 / TAU, 2.5);
 
-    let gain = 0.01;
+    let gain = 0.0001;
 
     for i in 0..=10000000 {
-        let assembly = AssemblyModel::new(
-            MotorModel::new(MotorParameters::new(distance_ratio)),
+        let mut assembly = AssemblyModel::new(
+            MotorModel::new(MotorParameters::new(parameters.distance_ratio())),
             SensorModel::new(SensorParameters::new(
-                alpha_voltage_scale,
-                Voltage::from_volts_f(alpha_voltage_offset),
+                parameters.alpha_voltage_scale(),
+                Voltage::from_volts_f(parameters.alpha_voltage_offset()),
             )),
             SensorModel::new(SensorParameters::new(
-                beta_voltage_scale,
-                Voltage::from_volts_f(beta_voltage_offset),
+                parameters.beta_voltage_scale(),
+                Voltage::from_volts_f(parameters.beta_voltage_offset()),
             )),
             AssemblyParameters::new(
                 MountedSensorParameters::new(ShaftAngle::from_radians_f(0.0)),
-                MountedSensorParameters::new(ShaftAngle::from_radians_f(beta_shaft_angle_offset)),
+                MountedSensorParameters::new(ShaftAngle::from_radians_f(
+                    parameters.beta_shaft_angle_offset(),
+                )),
             ),
         );
 
-        let mut sum_gradient = Parameters::zero();
         let mut sum_of_squared_errors = 0.0;
 
-        for &(alpha_voltage, beta_voltage) in &voltages {
-            let grad_squared_error_estimated_displacement = assembly
+        for &mut (mut alpha_voltage, mut beta_voltage) in &mut voltages {
+            let gradient = assembly
                 .gradient()
-                .grad_squared_error_estimated_displacement(alpha_voltage, beta_voltage, 1.0);
+                .grad_squared_error_estimated_displacement(
+                    &mut alpha_voltage,
+                    &mut beta_voltage,
+                    1.0,
+                )
+                * gain;
+            let negative_gradient = -gradient;
+            assembly.adjust(negative_gradient);
 
-            sum_gradient = sum_gradient + grad_squared_error_estimated_displacement;
+            parameters = Parameters::new(
+                assembly.motor_ref().parameters().distance_ratio(),
+                assembly
+                    .parameters()
+                    .mounted_beta_sensor_parameters()
+                    .shaft_angle_offset()
+                    .radians(),
+                assembly.alpha_sensor_ref().parameters().voltage_scale(),
+                assembly
+                    .alpha_sensor_ref()
+                    .parameters()
+                    .voltage_offset()
+                    .volts(),
+                assembly.beta_sensor_ref().parameters().voltage_scale(),
+                assembly
+                    .beta_sensor_ref()
+                    .parameters()
+                    .voltage_offset()
+                    .volts(),
+            );
+
             sum_of_squared_errors += assembly.inverse().squared_error_estimated_displacement(
                 assembly.inverse().error_estimated_displacement(
                     assembly.inverse().estimated_displacement(
-                        assembly
-                            .alpha_sensor_ref()
-                            .inverse()
-                            .estimated_sensor_angle(alpha_voltage),
-                        assembly
-                            .beta_sensor_ref()
-                            .inverse()
-                            .estimated_sensor_angle(beta_voltage),
+                        alpha_voltage.estimated_sensor_angle(assembly.alpha_sensor_ref().inverse()),
+                        beta_voltage.estimated_sensor_angle(assembly.beta_sensor_ref().inverse()),
                     ),
                     1.0,
                 ),
@@ -93,37 +111,41 @@ fn main() {
 
         if i % 1000 == 0 {
             println!("{}", i);
-            for &(alpha_voltage, beta_voltage) in &voltages {
+            for &mut (mut alpha_voltage, mut beta_voltage) in &mut voltages {
                 println!(
                     "{:06.2}",
                     100.0
                         * assembly.inverse().estimated_displacement(
-                            assembly
-                                .alpha_sensor_ref()
-                                .inverse()
-                                .estimated_sensor_angle(alpha_voltage),
-                            assembly
-                                .beta_sensor_ref()
-                                .inverse()
-                                .estimated_sensor_angle(beta_voltage)
+                            alpha_voltage
+                                .estimated_sensor_angle(assembly.alpha_sensor_ref().inverse()),
+                            beta_voltage
+                                .estimated_sensor_angle(assembly.beta_sensor_ref().inverse())
                         ),
                 );
             }
             println!("sum of squared errors is {}", sum_of_squared_errors);
-            println!("distance_ratio:          {}", distance_ratio);
-            println!("beta_shaft_angle_offset: {}", beta_shaft_angle_offset);
-            println!("alpha_voltage_scale:     {}", alpha_voltage_scale);
-            println!("alpha_voltage_offset:    {}", alpha_voltage_offset);
-            println!("beta_voltage_scale:      {}", beta_voltage_scale);
-            println!("beta_voltage_offset:     {}", beta_voltage_offset);
+            println!("distance_ratio:          {}", parameters.distance_ratio());
+            println!(
+                "beta_shaft_angle_offset: {}",
+                parameters.beta_shaft_angle_offset()
+            );
+            println!(
+                "alpha_voltage_scale:     {}",
+                parameters.alpha_voltage_scale()
+            );
+            println!(
+                "alpha_voltage_offset:    {}",
+                parameters.alpha_voltage_offset()
+            );
+            println!(
+                "beta_voltage_scale:      {}",
+                parameters.beta_voltage_scale()
+            );
+            println!(
+                "beta_voltage_offset:     {}",
+                parameters.beta_voltage_offset()
+            );
             println!();
         }
-
-        distance_ratio -= sum_gradient.distance_ratio() * gain;
-        beta_shaft_angle_offset -= sum_gradient.beta_shaft_angle_offset() * gain;
-        alpha_voltage_scale -= sum_gradient.alpha_voltage_scale() * gain;
-        alpha_voltage_offset -= sum_gradient.alpha_voltage_offset() * gain;
-        beta_voltage_scale -= sum_gradient.beta_voltage_scale() * gain;
-        beta_voltage_offset -= sum_gradient.beta_voltage_offset() * gain;
     }
 }

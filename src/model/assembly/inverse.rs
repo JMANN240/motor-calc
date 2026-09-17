@@ -33,10 +33,10 @@ impl<'i, F: Float> InverseAssemblyModel<'i, F> {
 
     pub fn estimated_displacement(
         self,
-        estimated_alpha_sensor_angle: SensorAngle<F, Alpha>,
-        estimated_beta_sensor_angle: SensorAngle<F, Beta>,
+        estimated_alpha_sensor_angle: &mut SensorAngle<F, Alpha>,
+        estimated_beta_sensor_angle: &mut SensorAngle<F, Beta>,
     ) -> F {
-        let estimated_shaft_angle =
+        let mut estimated_shaft_angle =
             self.estimated_shaft_angle(estimated_alpha_sensor_angle, estimated_beta_sensor_angle);
 
         let assembly = self.assembly();
@@ -44,12 +44,12 @@ impl<'i, F: Float> InverseAssemblyModel<'i, F> {
         let maybe_alpha_estimated_displacement = assembly
             .mounted_alpha_sensor()
             .inverse()
-            .estimated_displacement(estimated_alpha_sensor_angle, estimated_shaft_angle);
+            .estimated_displacement(estimated_alpha_sensor_angle, &mut estimated_shaft_angle);
 
         let maybe_beta_estimated_displacement = assembly
             .mounted_beta_sensor()
             .inverse()
-            .estimated_displacement(estimated_beta_sensor_angle, estimated_shaft_angle);
+            .estimated_displacement(estimated_beta_sensor_angle, &mut estimated_shaft_angle);
 
         match (
             maybe_alpha_estimated_displacement,
@@ -69,8 +69,8 @@ impl<'i, F: Float> InverseAssemblyModel<'i, F> {
 
     pub fn estimated_shaft_angle(
         self,
-        estimated_alpha_sensor_angle: SensorAngle<F, Alpha>,
-        estimated_beta_sensor_angle: SensorAngle<F, Beta>,
+        estimated_alpha_sensor_angle: &mut SensorAngle<F, Alpha>,
+        estimated_beta_sensor_angle: &mut SensorAngle<F, Beta>,
     ) -> ShaftAngle<F> {
         ShaftAngle::from_radians_f(
             self.estimated_shaft_angle_numerator(
@@ -86,8 +86,8 @@ impl<'i, F: Float> InverseAssemblyModel<'i, F> {
 
     pub fn estimated_shaft_angle_inner(
         self,
-        estimated_alpha_sensor_angle: SensorAngle<F, Alpha>,
-        estimated_beta_sensor_angle: SensorAngle<F, Beta>,
+        estimated_alpha_sensor_angle: &mut SensorAngle<F, Alpha>,
+        estimated_beta_sensor_angle: &mut SensorAngle<F, Beta>,
     ) -> F {
         self.estimated_shaft_angle_numerator(
             estimated_alpha_sensor_angle,
@@ -100,8 +100,8 @@ impl<'i, F: Float> InverseAssemblyModel<'i, F> {
 
     pub fn estimated_shaft_angle_numerator(
         self,
-        estimated_alpha_sensor_angle: SensorAngle<F, Alpha>,
-        estimated_beta_sensor_angle: SensorAngle<F, Beta>,
+        estimated_alpha_sensor_angle: &mut SensorAngle<F, Alpha>,
+        estimated_beta_sensor_angle: &mut SensorAngle<F, Beta>,
     ) -> F {
         let (
             sin_estimated_beta_sensor_shaft_angle_offset,
@@ -123,8 +123,8 @@ impl<'i, F: Float> InverseAssemblyModel<'i, F> {
 
     pub fn estimated_shaft_angle_denominator(
         self,
-        estimated_alpha_sensor_angle: SensorAngle<F, Alpha>,
-        estimated_beta_sensor_angle: SensorAngle<F, Beta>,
+        estimated_alpha_sensor_angle: &mut SensorAngle<F, Alpha>,
+        estimated_beta_sensor_angle: &mut SensorAngle<F, Beta>,
     ) -> F {
         let (
             sin_estimated_beta_sensor_shaft_angle_offset,

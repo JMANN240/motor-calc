@@ -16,8 +16,8 @@ fn bench_grad_squared_error_estimated_displacement(c: &mut Criterion) {
         |b, &(raw_alpha_voltage, raw_beta_voltage)| {
             b.iter(|| {
                 gradient.grad_squared_error_estimated_displacement(
-                    Voltage::from_volts_f(raw_alpha_voltage),
-                    Voltage::from_volts_f(raw_beta_voltage),
+                    &mut Voltage::from_volts_f(raw_alpha_voltage),
+                    &mut Voltage::from_volts_f(raw_beta_voltage),
                     1.0,
                 )
             });

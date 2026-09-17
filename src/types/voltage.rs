@@ -5,13 +5,14 @@ use core::{
 
 use num_traits::Float;
 
-use crate::types::sensor_type::SensorType;
+use crate::{model::sensor::inverse::InverseSensorModel, types::{sensor_angle::SensorAngle, sensor_type::SensorType}};
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Voltage<F: Float, T: SensorType> {
     volts: F,
     sensor_type: PhantomData<T>,
+    estimated_sensor_angle: SensorAngle<F, T>,
 }
 
 impl<F: Float, T: SensorType> Voltage<F, T> {
@@ -19,6 +20,7 @@ impl<F: Float, T: SensorType> Voltage<F, T> {
         Self {
             volts,
             sensor_type: PhantomData,
+            estimated_sensor_angle: SensorAngle::from_radians_f(F::infinity()),
         }
     }
 
@@ -32,6 +34,14 @@ impl<F: Float, T: SensorType> Voltage<F, T> {
 
     pub fn volts(self) -> F {
         self.volts
+    }
+
+    pub fn estimated_sensor_angle(&mut self, inverse_sensor_model: InverseSensorModel<'_, F, T>) -> &mut SensorAngle<F, T> {
+        if self.estimated_sensor_angle.radians().is_infinite() {
+            self.estimated_sensor_angle = inverse_sensor_model.estimated_sensor_angle(*self)
+        }
+
+        &mut self.estimated_sensor_angle
     }
 }
 

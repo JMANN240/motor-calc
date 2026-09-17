@@ -56,14 +56,13 @@ impl<'g, F: Float> GradientSensorModel<'g, F, Alpha> {
 
     pub fn grad_tan_estimated_sensor_angle(
         self,
-        alpha_voltage: Voltage<F, Alpha>,
+        alpha_voltage: &mut Voltage<F, Alpha>,
     ) -> Parameters<F> {
         motor_calc_core::gradient::grad_tan_estimated_alpha_sensor_angle(
-            self.sensor()
-                .inverse()
-                .estimated_sensor_angle(alpha_voltage)
+            alpha_voltage
+                .estimated_sensor_angle(self.sensor().inverse())
                 .tan(),
-            self.grad_estimated_sensor_angle(alpha_voltage),
+            self.grad_estimated_sensor_angle(*alpha_voltage),
         )
     }
 }
@@ -98,13 +97,15 @@ impl<'g, F: Float> GradientSensorModel<'g, F, Beta> {
         )
     }
 
-    pub fn grad_tan_estimated_sensor_angle(self, beta_voltage: Voltage<F, Beta>) -> Parameters<F> {
+    pub fn grad_tan_estimated_sensor_angle(
+        self,
+        beta_voltage: &mut Voltage<F, Beta>,
+    ) -> Parameters<F> {
         motor_calc_core::gradient::grad_tan_estimated_beta_sensor_angle(
-            self.sensor()
-                .inverse()
-                .estimated_sensor_angle(beta_voltage)
+            beta_voltage
+                .estimated_sensor_angle(self.sensor().inverse())
                 .tan(),
-            self.grad_estimated_sensor_angle(beta_voltage),
+            self.grad_estimated_sensor_angle(*beta_voltage),
         )
     }
 }

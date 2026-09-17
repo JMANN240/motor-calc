@@ -1,5 +1,5 @@
 typedef struct {
-    double distance_ratio;
+    float distance_ratio;
 } MotorParameters;
 
 typedef struct {
@@ -7,11 +7,19 @@ typedef struct {
 } MotorModel;
 
 typedef struct {
-    double volts;
+    float radians;
+    float sin;
+    float cos;
+    float tan;
+} SensorAngle;
+
+typedef struct {
+    float volts;
+    SensorAngle estimated_sensor_angle;
 } Voltage;
 
 typedef struct {
-    double voltage_scale;
+    float voltage_scale;
     Voltage voltage_offset;
 } SensorParameters;
 
@@ -20,7 +28,10 @@ typedef struct {
 } SensorModel;
 
 typedef struct {
-    double radians;
+    float radians;
+    float sin;
+    float cos;
+    float tan;
 } ShaftAngle;
 
 typedef struct {

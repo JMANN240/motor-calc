@@ -40,8 +40,8 @@ impl<'i, 'm, 's, F: Float, T: SensorType> InverseMountedSensorModel<'i, 'm, 's, 
 impl<'i, 'm, 's, F: Float> InverseMountedSensorModel<'i, 'm, 's, F, Alpha> {
     pub fn estimated_displacement(
         self,
-        estimated_alpha_sensor_angle: SensorAngle<F, Alpha>,
-        estimated_shaft_angle: ShaftAngle<F>,
+        estimated_alpha_sensor_angle: &mut SensorAngle<F, Alpha>,
+        estimated_shaft_angle: &mut ShaftAngle<F>,
     ) -> Option<F> {
         let estimated_displacement = motor_calc_core::inverse::estimated_alpha_displacement(
             self.estimated_displacement_numerator(estimated_alpha_sensor_angle),
@@ -58,7 +58,7 @@ impl<'i, 'm, 's, F: Float> InverseMountedSensorModel<'i, 'm, 's, F, Alpha> {
 
     pub fn estimated_displacement_numerator(
         self,
-        estimated_alpha_sensor_angle: SensorAngle<F, Alpha>,
+        estimated_alpha_sensor_angle: &mut SensorAngle<F, Alpha>,
     ) -> F {
         motor_calc_core::inverse::estimated_alpha_displacement_numerator(
             estimated_alpha_sensor_angle.tan(),
@@ -75,8 +75,8 @@ impl<'i, 'm, 's, F: Float> InverseMountedSensorModel<'i, 'm, 's, F, Alpha> {
     /// is equal to zero. The only time this really happens is when the shaft is either facing directly towards or away from the sensor.
     pub fn estimated_displacement_denominator(
         self,
-        estimated_alpha_sensor_angle: SensorAngle<F, Alpha>,
-        estimated_shaft_angle: ShaftAngle<F>,
+        estimated_alpha_sensor_angle: &mut SensorAngle<F, Alpha>,
+        estimated_shaft_angle: &mut ShaftAngle<F>,
     ) -> F {
         let (sin_estimated_shaft_angle, cos_estimated_shaft_angle) =
             estimated_shaft_angle.sin_cos();
@@ -92,8 +92,8 @@ impl<'i, 'm, 's, F: Float> InverseMountedSensorModel<'i, 'm, 's, F, Alpha> {
 impl<'i, 'm, 's, F: Float> InverseMountedSensorModel<'i, 'm, 's, F, Beta> {
     pub fn estimated_displacement(
         self,
-        estimated_beta_sensor_angle: SensorAngle<F, Beta>,
-        estimated_shaft_angle: ShaftAngle<F>,
+        estimated_beta_sensor_angle: &mut SensorAngle<F, Beta>,
+        estimated_shaft_angle: &mut ShaftAngle<F>,
     ) -> Option<F> {
         let estimated_displacement = motor_calc_core::inverse::estimated_beta_displacement(
             self.estimated_displacement_numerator(estimated_beta_sensor_angle),
@@ -110,7 +110,7 @@ impl<'i, 'm, 's, F: Float> InverseMountedSensorModel<'i, 'm, 's, F, Beta> {
 
     pub fn estimated_displacement_numerator(
         self,
-        estimated_beta_sensor_angle: SensorAngle<F, Beta>,
+        estimated_beta_sensor_angle: &mut SensorAngle<F, Beta>,
     ) -> F {
         motor_calc_core::inverse::estimated_beta_displacement_numerator(
             estimated_beta_sensor_angle.tan(),
@@ -127,11 +127,11 @@ impl<'i, 'm, 's, F: Float> InverseMountedSensorModel<'i, 'm, 's, F, Beta> {
     /// is equal to zero. The only time this really happens is when the shaft is either facing directly towards or away from the sensor.
     pub fn estimated_displacement_denominator(
         self,
-        estimated_beta_sensor_angle: SensorAngle<F, Beta>,
-        estimated_shaft_angle: ShaftAngle<F>,
+        estimated_beta_sensor_angle: &mut SensorAngle<F, Beta>,
+        estimated_shaft_angle: &mut ShaftAngle<F>,
     ) -> F {
         let (sin_estimated_relative_shaft_angle, cos_estimated_relative_shaft_angle) = self
-            .estimated_relative_shaft_angle(estimated_shaft_angle)
+            .estimated_relative_shaft_angle(*estimated_shaft_angle)
             .sin_cos();
 
         motor_calc_core::inverse::estimated_beta_displacement_denominator(
