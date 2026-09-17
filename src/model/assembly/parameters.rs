@@ -30,8 +30,16 @@ impl<F: Float> AssemblyParameters<F> {
         self.mounted_alpha_sensor_parameters
     }
 
+    pub fn mounted_alpha_sensor_parameters_mut(&mut self) -> &mut MountedSensorParameters<F> {
+        &mut self.mounted_alpha_sensor_parameters
+    }
+
     pub fn mounted_beta_sensor_parameters(self) -> MountedSensorParameters<F> {
         self.mounted_beta_sensor_parameters
+    }
+
+    pub fn mounted_beta_sensor_parameters_mut(&mut self) -> &mut MountedSensorParameters<F> {
+        &mut self.mounted_beta_sensor_parameters
     }
 }
 

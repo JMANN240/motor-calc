@@ -71,6 +71,10 @@ impl<F: Float> AssemblyModel<F> {
         self.parameters
     }
 
+    pub fn parameters_mut(&mut self) -> &mut AssemblyParameters<F> {
+        &mut self.parameters
+    }
+
     pub fn inverse(&self) -> InverseAssemblyModel<'_, F> {
         InverseAssemblyModel::new(self)
     }

@@ -18,6 +18,10 @@ impl<F: Float> MountedSensorParameters<F> {
     pub fn shaft_angle_offset(self) -> ShaftAngle<F> {
         self.shaft_angle_offset
     }
+
+    pub fn shaft_angle_offset_mut(&mut self) -> &mut ShaftAngle<F> {
+        &mut self.shaft_angle_offset
+    }
 }
 
 impl<F: Float> Add for MountedSensorParameters<F> {

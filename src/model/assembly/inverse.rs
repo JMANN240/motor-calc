@@ -57,7 +57,7 @@ impl<'i, F: Float> InverseAssemblyModel<'i, F> {
         ) {
             (Some(alpha_estimated_displacement), Some(beta_estimated_displacement)) => {
                 (alpha_estimated_displacement + beta_estimated_displacement)
-                    / F::from(2).expect("2 can always be represented with a float")
+                    * F::from(0.5).expect("0.5 can always be represented with a float")
             }
             (Some(alpha_estimated_displacement), None) => alpha_estimated_displacement,
             (None, Some(beta_estimated_displacement)) => beta_estimated_displacement,
